@@ -1,0 +1,14 @@
+Things to do:
+
+- Load up database
+- Decide on basic features:
+    -- Search
+    -- Update
+    -- Delete
+- Create separate table for build status : Acquired, Building, Completed
+    - 3 states : Yellow (In Process), Green (Completed), Red (Stopped) by default
+    - All entries will be empty unless done
+- Create database for logs : 
+    - ID, Name
+    - Comment
+    - ID is duplicate as foreign key 
