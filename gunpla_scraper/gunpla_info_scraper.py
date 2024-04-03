@@ -59,7 +59,7 @@ async def main():
             else:
                 pass
 
-        rate_limit = AsyncLimiter(3, 10)
+        rate_limit = AsyncLimiter(5, 7)
 
         with progress_bar as p:
 
@@ -68,15 +68,15 @@ async def main():
                 total=len(gunpla_link),
             )
 
-            for url in range(0, len(gunpla_link), 3):
+            for url in range(0, len(gunpla_link), 5):
                 task_gunpla = [
                     gunpla_scrape.scrape_data(
                         current_url.strip(), rate_limit=rate_limit
                     )
-                    for current_url in gunpla_link[url : url + 3]
+                    for current_url in gunpla_link[url : url + 5]
                 ]
                 # task.appen
-                p.update(task, advance=3)
+                p.update(task, advance=5)
                 await asyncio.sleep(5)
                 await asyncio.gather(*task_gunpla)
 

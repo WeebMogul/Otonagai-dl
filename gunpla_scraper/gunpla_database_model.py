@@ -48,7 +48,6 @@ async def fetch_url(client, url, limiter):
             if resp.status_code == 404:
                 return False
             else:
-                print(resp.status_code)
                 return resp.text
 
         except httpx.TimeoutException:
@@ -61,6 +60,23 @@ def extract_text(element):
 
     if element is not None:
         return element.text.strip()
+
+
+def clean_price(price):
+
+    if price is not None:
+        return (
+            re.sub(
+                "\s+|Dh|AED",
+                " ",
+                price,
+            )
+            .strip()
+            .split()[-1]
+        )
+
+    else:
+        return None
 
 
 class gunpla_db:
@@ -102,13 +118,7 @@ class gunpla_db:
                 {
                     "bandai_id": self.gunpla_info.get("Code"),
                     "title": self.gunpla_info.get("title", None),
-                    "price": re.sub(
-                        "\s+|Dh|AED",
-                        " ",
-                        self.gunpla_info.get("price", None),
-                    )
-                    .strip()
-                    .split()[-1],
+                    "price": clean_price(self.gunpla_info.get("price", None)),
                     "url": self.gunpla_info["url"],
                     "jan_code": self.gunpla_info.get("JAN Code", None),
                     "release_date": self.gunpla_info.get("Release Date", None),
