@@ -1,91 +1,111 @@
+import requests
+from bs4 import BeautifulSoup
+import re
 import os
+from rich import print
 import random
+import asyncio
+import aiohttp
 import sqlite3
-import asyncio, aiohttp
-import time
-from gunpla_database_model import gunpla_db, gunpla_scraper
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-)
 from aiolimiter import AsyncLimiter
+import httpx
+from rich import print
+from rich.panel import Panel
 
-progress_bar = Progress(
-    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-    BarColumn(),
-    MofNCompleteColumn(),
-    TextColumn("•"),
-    TimeElapsedColumn(),
-    TextColumn("•"),
-    TimeRemainingColumn(),
-)
+# current working directory
 current_dir = os.getcwd() + "\\"
 
+# components for progress bar
+user_agent = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+}
 
-def find_remaining_link():
 
-    db_path = f"{os.getcwd()}/gunpla.db"
-    if not os.path.exists(db_path):
-        return []
+def clean_price(price):
+
+    if price is not None:
+        return (
+            re.sub(
+                "\s+|Dh|AED",
+                " ",
+                price,
+            )
+            .strip()
+            .split()[-1]
+        )
+
     else:
-        conn = sqlite3.connect(f"{os.getcwd()}/gunpla.db")
-        curs = conn.cursor()
+        return None
 
-        url_links = curs.execute("select url from gunpla")
+
+class gunpla_db_connect:
+
+    def __init__(self):
+        self.conn_gunpla = sqlite3.connect(rf"{current_dir}\gunpla.db")
+        self.curs_gunpla = self.conn_gunpla.cursor()
+
+    def create_database(self):
+
+        with self.conn_gunpla:
+            self.curs_gunpla.execute(
+                """
+                        CREATE TABLE IF NOT EXISTS gunpla (
+                            bandai_id text primary key not null,
+                            title text,
+                            price float,
+                            url text,
+                            jan_code text,
+                            release_date date,
+                            category text,
+                            series text,
+                            item_type text,
+                            manufacturer text,
+                            item_size_and_weight text
+                        )
+                        """
+            )
+
+    def add_to_database(
+        self,
+        gunpla_info,
+    ):
+
+        try:
+            with self.conn_gunpla:
+                self.curs_gunpla.execute(
+                    """ INSERT INTO gunpla VALUES(:bandai_id, :title, :price, :url, :jan_code, :release_date, :category, :series, :item_type, :manufacturer, :item_size_and_weight) """,
+                    {
+                        "bandai_id": gunpla_info.get("Code"),
+                        "title": gunpla_info.get("title", None),
+                        "price": clean_price(gunpla_info.get("price", None)),
+                        "url": gunpla_info["url"],
+                        "jan_code": gunpla_info.get("JAN Code", None),
+                        "release_date": gunpla_info.get("Release Date", None),
+                        "category": gunpla_info.get("Category", None),
+                        "series": gunpla_info.get("Series", None),
+                        "item_type": gunpla_info.get("Item Type", None),
+                        "manufacturer": gunpla_info.get("Manufacturer", None),
+                        "item_size_and_weight": gunpla_info.get(
+                            "Item Size/Weight", None
+                        ),
+                    },
+                )
+                return True
+        except sqlite3.IntegrityError:
+            # layout_table.add_row(
+            return False
+
+    def get_remaining_links(
+        self,
+        gunpla_urls: list,
+    ):
+        url_links = self.curs_gunpla.execute("select url from gunpla")
         url_clean = [link[0] for link in url_links]
 
-        return url_clean
-
-
-async def main():
-
-    gunpla_scrape = gunpla_scraper()
-    tasks = []
-
-    with open(rf"{current_dir + 'gunpla_scraper'}\gundam_links.txt", "r") as read:
-        # get all the urls in the text file
-        gunpla_link = list(set(read.readlines()))
-
-        # objects for scraper and database setup
-
-        url_clean = find_remaining_link()
-        for link in gunpla_link:
+        for link in gunpla_urls:
             if link.strip() in url_clean:
-                gunpla_link.remove(link)
+                gunpla_urls.remove(link)
             else:
                 pass
 
-        rate_limit = AsyncLimiter(5, 7)
-
-        with progress_bar as p:
-
-            task = p.add_task(
-                "[progress.percentage]{task.percentage:>3.0f}%",
-                total=len(gunpla_link),
-            )
-
-            for url in range(0, len(gunpla_link), 5):
-                task_gunpla = [
-                    gunpla_scrape.scrape_data(
-                        current_url.strip(), rate_limit=rate_limit
-                    )
-                    for current_url in gunpla_link[url : url + 5]
-                ]
-                # task.appen
-                p.update(task, advance=5)
-                await asyncio.sleep(5)
-                await asyncio.gather(*task_gunpla)
-
-
-if __name__ == "__main__":
-
-    current = time.perf_counter()
-    asyncio.run(main())
-    next = time.perf_counter()
-
-    print(f"Time taken in minutes : {((next - current))/60}")
-    print(f"Time taken in hours : {((next - current))/3600}")
+        return gunpla_urls
