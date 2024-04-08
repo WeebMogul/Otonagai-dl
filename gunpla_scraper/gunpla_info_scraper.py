@@ -13,7 +13,6 @@ from rich import print
 from rich.panel import Panel
 
 # current working directory
-current_dir = os.getcwd() + "\\"
 
 # components for progress bar
 user_agent = {
@@ -40,8 +39,8 @@ def clean_price(price):
 
 class gunpla_db_connect:
 
-    def __init__(self):
-        self.conn_gunpla = sqlite3.connect(rf"{current_dir}\gunpla.db")
+    def __init__(self, location):
+        self.conn_gunpla = sqlite3.connect(location)
         self.curs_gunpla = self.conn_gunpla.cursor()
 
     def create_database(self):

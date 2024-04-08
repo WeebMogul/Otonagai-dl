@@ -6,7 +6,6 @@ import time
 from rich.live import Live
 from rich.console import Console
 from aiolimiter import AsyncLimiter
-from ui import GunplaScraperUI
 from rich.panel import Panel
 import httpx
 from bs4 import BeautifulSoup
