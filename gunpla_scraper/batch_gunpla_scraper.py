@@ -8,13 +8,14 @@ from rich.progress import (
     TimeElapsedColumn,
     TimeRemainingColumn,
 )
-from gunpla_info_scraper import gunpla_db_connect
+from gunpla_db_schema import gunpla_db_connect
 import time
-from gunpla_db_model import Gunpla_Info
+from gunpla_profile_scraper import Gunpla_Info
 import asyncio
 from rich import print
 from rich.prompt import Prompt
 from rich.panel import Panel
+from rich.layout import Layout
 from rich.live import Live
 import os
 
@@ -25,16 +26,23 @@ prog_bar = Progress(
 )
 
 prog_panel = Panel(
-    prog_bar, border_style="blue", expand=True, padding=(1, 1), height=None
+    prog_bar,
+    border_style="blue",
+    expand=True,
+    padding=(1, 1),
+    height=None,
+    style="blue",
 )
+
+prog_layout = Layout(Panel("Loading for extraction", padding=1))
 
 
 async def scrape(url, start_page, end_page, gunpla_db):
 
-    prog_bar.add_task("Extracting page links", total=int(end_page))
+    prog_bar.add_task("Extracting page links", total=(int(end_page) - int(start_page)))
     gunpla_links = []
 
-    with Live(prog_panel, auto_refresh=True, screen=True) as live:
+    with Live(prog_panel, auto_refresh=False, screen=True) as live:
         for i in range(int(start_page), int(end_page) + 1):
 
             r = requests.get(
@@ -46,12 +54,11 @@ async def scrape(url, start_page, end_page, gunpla_db):
             for link in soup.find_all("a", class_="item-img-wrapper", href=True):
                 gunpla_links.append("https://www.hlj.com" + link["href"])
 
-            # print(prog_bar)
             time.sleep(5)
             prog_bar.update(0, advance=1)
             live.update(prog_panel, refresh=True)
 
-        gunpla_info = Gunpla_Info(list(set(gunpla_links)), gunpla_db)
+    gunpla_info = Gunpla_Info(list(set(gunpla_links)), gunpla_db)
     await gunpla_info.scrape_info()
 
 

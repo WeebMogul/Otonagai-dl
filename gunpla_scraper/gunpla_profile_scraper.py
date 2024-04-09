@@ -9,7 +9,8 @@ from aiolimiter import AsyncLimiter
 from rich.panel import Panel
 import httpx
 from bs4 import BeautifulSoup
-from gunpla_info_scraper import gunpla_db_connect
+from gunpla_db_schema import gunpla_db_connect
+from ui import GunplaScraperUI
 import requests
 
 # progress_bar = Progress(
@@ -21,6 +22,8 @@ import requests
 #     TextColumn("•"),
 #     TimeRemainingColumn(),
 # )
+
+gunpla_ui = GunplaScraperUI()
 
 user_agent = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
@@ -60,6 +63,7 @@ async def fetch_url(client, url, limiter):
 
 loading_bar_size = 7
 download_list_ratio = 2
+gunpla_ui = GunplaScraperUI()
 
 
 class Gunpla_Info:
@@ -68,7 +72,9 @@ class Gunpla_Info:
         self.gunpla_urls = gunpla_urls
         self.gunpla_conn = gunpla_conn
 
-    def find_remaining_link(self, gunpla_urls: list, gunpla_db_conn: gunpla_db_connect):
+    def _find_remaining_link(
+        self, gunpla_urls: list, gunpla_db_conn: gunpla_db_connect
+    ):
 
         url_links = gunpla_db_conn.get_remaining_links(gunpla_urls)
         url_clean = [link[0] for link in url_links]
@@ -83,23 +89,43 @@ class Gunpla_Info:
 
     async def scrape_info(self):
 
-        url_clean = self.find_remaining_link(self.gunpla_urls, self.gunpla_conn)
+        url_clean = self._find_remaining_link(self.gunpla_urls, self.gunpla_conn)
 
-        rate_limit = AsyncLimiter(10, 10)
+        rate_limit = AsyncLimiter(5, 7)
 
-        for url in range(0, len(url_clean), 20):
-            task_gunpla = [
-                self.extract_data(
-                    current_url.strip(),
-                    rate_limit=rate_limit,
+        profile_bar, panel = await gunpla_ui.gunpla_profile_panel(
+            total_stock=len(url_clean)
+        )
+        table, table_panel = await gunpla_ui.create_table()
+
+        with Live(
+            gunpla_ui.progress_layout,
+            auto_refresh=False,
+            screen=True,
+        ) as live:
+            # live.update(gunpla_ui.progress_layout, refresh=True)
+            for url in range(0, len(url_clean)):
+
+                if url % 30 == 0:
+                    table, table_panel = await gunpla_ui.create_table()
+                # task_gunpla = [
+                #     self.extract_data(
+                #         current_url.strip(),
+                #         rate_limit=rate_limit,
+                #         table_data=table,
+                #     )
+                #     for current_url in self.gunpla_urls[url : url + 10]
+                # ]
+
+                await self.extract_data(
+                    url_clean[url], rate_limit=rate_limit, table_data=table
                 )
-                for current_url in self.gunpla_urls[url : url + 10]
-            ]
+                gunpla_ui.loading_bar.update(profile_bar, advance=1, refresh=True)
+                gunpla_ui.update_panels(panel, table_panel)
+                live.update(gunpla_ui.progress_layout, refresh=True)
+                await asyncio.sleep(3)
 
-            await asyncio.sleep(3)
-            await asyncio.gather(*task_gunpla)
-
-    async def extract_data(self, url: str, rate_limit: AsyncLimiter):
+    async def extract_data(self, url: str, rate_limit: AsyncLimiter, table_data):
         try:
             # fetch and process data from batch of urls asynchronously
             async with httpx.AsyncClient() as client:
@@ -152,9 +178,13 @@ class Gunpla_Info:
                         )
 
                 if self.gunpla_conn.add_to_database(gunpla_info=gunpla_info):
-                    print(f"{gunpla_info['title']} is added to the database")
+                    table_data.add_row(
+                        f"{gunpla_info['title']} is added to the database"
+                    )
                 else:
-                    print(f"{gunpla_info['title']} already exists in the database")
+                    table_data.add_row(
+                        f"{gunpla_info['title']} already exists in the database"
+                    )
 
         except requests.HTTPError:
             print("Page not found. Skipping")
