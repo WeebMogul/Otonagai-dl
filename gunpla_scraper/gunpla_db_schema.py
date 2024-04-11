@@ -98,13 +98,38 @@ class gunpla_db_connect:
         self,
         gunpla_urls: list,
     ):
-        url_links = self.curs_gunpla.execute("select url from gunpla")
-        url_clean = [link[0] for link in url_links]
+        # with
+        url_links = self.curs_gunpla.execute("select url from gunpla").fetchall()
+        url_clean = list(link[0] for link in url_links)
+        gunpla_urls = list(link for link in gunpla_urls)
 
         for link in gunpla_urls:
-            if link.strip() in url_clean:
+            if link in url_clean:
                 gunpla_urls.remove(link)
-            else:
-                pass
+
+        print(len(gunpla_urls))
 
         return gunpla_urls
+
+
+# from rich import print
+
+# if __name__ == "__main__":
+#     db_link = os.path.join(os.getcwd(), "Gunpla-Tracker\Data\gunpla.db")
+#     txt_link = os.path.join(
+#         os.getcwd(), "Gunpla-Tracker\gunpla_scraper\gundam_links.txt"
+#     )
+
+#     with open(txt_link, "r+") as read:
+#         # get all the urls in the text file
+#         new_links = []
+#         gunpla_set = list(read.readlines())
+#         for i in gunpla_set:
+#             new_links.append(i.split("https"))
+
+#         # new_links = list("https" + i for i in gunpla_list)
+#         new_total = set("https" + new_link for new_link in new_links[0])
+#         print(new_total)
+
+#     gunpla_conn = gunpla_db_connect(db_link)
+#     gunpla_conn.get_remaining_links(new_total)

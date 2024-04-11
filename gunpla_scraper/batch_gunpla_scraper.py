@@ -58,8 +58,13 @@ async def scrape(url, start_page, end_page, gunpla_db):
             prog_bar.update(0, advance=1)
             live.update(prog_panel, refresh=True)
 
-    gunpla_info = Gunpla_Info(list(set(gunpla_links)), gunpla_db)
-    await gunpla_info.scrape_info()
+    txt_link = os.path.join(
+        os.getcwd(), "Gunpla-Tracker\gunpla_scraper\gundam_links.txt"
+    )
+    with open(txt_link, "w") as read:
+        read.writelines(gunpla_links)
+    # gunpla_info = Gunpla_Info(list(set(gunpla_links)), gunpla_db)
+    # await gunpla_info.scrape_info()
 
 
 user_agent = {
