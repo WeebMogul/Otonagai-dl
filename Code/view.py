@@ -1,6 +1,7 @@
 from rich.table import Table
 from rich.style import Style
 from datetime import datetime
+from readchar import key
 
 
 class Gunpla_Table_View:
@@ -8,7 +9,7 @@ class Gunpla_Table_View:
     def __init__(self):
         self.table = None
 
-    def create_gunpla_info_table(self, gunpla_info, select):
+    def create_gunpla_info_table(self, gunpla_info, select, entered):
 
         selected = Style(color="blue", bgcolor="white", bold=True)
 
@@ -21,7 +22,10 @@ class Gunpla_Table_View:
         self.table.add_column("release_date")
 
         for i, col in enumerate(gunpla_info):
-            if i == select:
+            if i == select and entered == key.ENTER:
+                self.table.add_row(*col, style=selected)
+                return [col[0], col[1], col[3]]
+            elif i == select:
                 self.table.add_row(*col, style=selected)
             else:
                 self.table.add_row(*col)

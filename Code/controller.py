@@ -8,16 +8,13 @@ from curses import wrapper
 from readchar import readkey, key
 from InquirerPy import inquirer
 from datetime import datetime
+from rich.live import Live
 
 db_location = r"D:\GitHub\Python-Programming-Projects\Gunpla_Tracker_Database\Gunpla-Tracker\Data\gunpla.db"
 
 console = Console()
 
 conn = sqlite3.connect(db_location)
-# conn.create_function(
-#     "regexp",
-#     2,
-# )
 curs = conn.cursor()
 
 
@@ -31,7 +28,6 @@ def create_table():
             """
                      CREATE TABLE IF NOT EXISTS gunpla_log(
                          bandai_id text,
-                         build_date date,
                          title text,
                          item_type date,
                          status text
@@ -41,34 +37,30 @@ def create_table():
 
 
 def search_gunpla(title: str = "", series: str = "", item_type: str = ""):
+
+    search_title = inquirer.text("Which Gundam you want to search for ?").execute()
+    search_item_type = inquirer.text(
+        "Which grade to search for ?",
+        completer={
+            "High Grade Kits": None,
+            "Master Grade Kits": None,
+            "Real Grade Kits": None,
+            "Perfect Grade Kits": None,
+            "Other Gundam Kits": None,
+        },
+    ).execute()
+
     curs.execute(
         "SELECT bandai_id, title, series, item_type, release_date from gunpla where title like :title and series like :series "
         "and item_type like :item_type order by release_date desc limit 10;",
         {
-            "title": "%" + title + "%",
+            "title": "%" + search_title + "%",
             "series": "%" + series + "%",
-            "item_type": "%" + item_type + "%",
+            "item_type": "%" + search_item_type + "%",
         },
     )
     result = curs.fetchall()
     return result
-
-
-def show_gunpla_info(result, select):
-    console.print(Gunpla_Table_View().create_gunpla_info_table(result, select))
-
-
-def add_gunpla_task(bandai_id, task):
-
-    with conn:
-        curs.execute(
-            "INSERT into gunpla_log bandai_id :bandai_id, build_date :build_date, title :title, item_type :item_type, status :status",
-            {
-                "bandai_id": bandai_id,
-                "task": task,
-                "build date": datetime.now().date,
-            },
-        )
 
 
 def change_position(old_position: int, new_position: int, commit=True):
@@ -100,44 +92,78 @@ def delete_gunpla_task(task_id: str):
             )
 
         for pos in range(task_id + 1, 100):
-            change_position(task_id, task_id - 1)
+            change_position(pos, task_id - 1)
 
 
-def navigate_gunpla(console, selected=0):
-    console.clear()
-    result = search_gunpla("Aerial", "")
-    show_gunpla_info(result, selected)
+def add_gunpla_log_status(bandai_id: str, title: str, item_type: str):
+
+    log_state = inquirer.select(
+        "Please confirm state of task",
+        [
+            "Planning",
+            "Acquired",
+            "Building",
+            "Completed",
+            "On Hold",
+            "Dropped",
+        ],
+    ).execute()
+    if inquirer.confirm("Do you want to add to the database ?").execute():
+        with conn:
+            curs.execute(
+                "INSERT into gunpla_log VALUES (:bandai_id, :title, :item_type, :status)",
+                {
+                    "bandai_id": bandai_id,
+                    "title": title,
+                    "item_type": item_type,
+                    "status": log_state,
+                },
+            )
+            print(f"{title}({bandai_id}) has been added to the database.")
+
+    return_add = inquirer.confirm("Do you want to return to the search bar ?").execute()
+
+    return return_add
+
+
+def navigate_gunpla(result, selected=0, enter=False):
+    # result = search_gunpla()
+    return Gunpla_Table_View().create_gunpla_info_table(result, selected, enter)
 
 
 def main():
 
-    conn = sqlite3.connect(db_location)
-    conn.create_function("regexp", 2, regexp)
-    curs = conn.cursor()
-
-    console = Console()
-
     selected = 0
-    navigate_gunpla(console)
+    console.clear()
+    result = search_gunpla()
 
-    while True:
-        ch = readkey()
-        if ch == key.UP:
-            selected = max(0, selected - 1)
-        if ch == key.DOWN:
-            selected = min(100, selected + 1)
-        if ch == key.ENTER:
-            inquirer.confirm("Do you want to add to the database ?").execute()
-            inquirer.select(
-                "Please confirm state of task",
-                ["Planning", "Acquired", "Building", "Completed", "On Hold", "Dropped"],
-            ).execute()
-            break
-        navigate_gunpla(console, selected)
+    with Live(navigate_gunpla(result), auto_refresh=False) as live:
+        #  console.clear()
+        while True:
+            ch = readkey()
+            if ch == key.UP:
+                selected = max(0, selected - 1)
+            if ch == key.DOWN:
+                selected = min(100, selected + 1)
+            if ch == key.ENTER:
+                live.stop()
+                selected_gunpla = navigate_gunpla(result, selected, ch)
+                add_gunpla_log_status(
+                    selected_gunpla[0], selected_gunpla[1], selected_gunpla[2]
+                )
+                # add_gunpla_log_status()
+                # if add_gunpla_log_status():
+                #     print(navigate_gunpla(result, selected, ch))
+                #     main()
+                # elif return_menu:
+                # main()
+                break
+            live.update(navigate_gunpla(result, selected, ch), refresh=True)
 
 
 # create_table()
 
 
 if __name__ == "__main__":
+    create_table()
     main()
