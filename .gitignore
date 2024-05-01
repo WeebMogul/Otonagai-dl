@@ -1,0 +1,20 @@
+# Python library build files
+dist/
+build/
+*.egg-info/
+
+# JSON files
+*.json
+
+# CSV files
+*.csv
+
+# Database files
+*.db
+
+# Excel files
+*.xlsx
+*.xls
+
+*.pyc
+*.txt
