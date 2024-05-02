@@ -81,7 +81,7 @@ class HLJ_product_scraper:
 
     async def _get_product_info(self, url):
         async with self.semaphore:
-            html_response = requests.Session().get(url, headers=self.headers)
+            html_response = requests.Session().get(url.strip(), headers=self.headers)
 
             # check if the url response isn't giving a 404 error
             if html_response.status_code != 404:
@@ -123,9 +123,7 @@ class HLJ_product_scraper:
                     "Code": f"NA_{random.randint(1000,9999)}",
                 }
             await self.hlj_ui.update_bar()
-            await self.hlj_ui.update_table(
-                message=f"Finished {hlj_product_info['URL']}"
-            )
+            await self.hlj_ui.update_table(message=f"Finished {url.strip()}")
             await self.hlj_ui.update_layout()
 
         return hlj_product_info
@@ -148,14 +146,14 @@ class HLJ_product_scraper:
         self.url_batch.extend(batch_url)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    single_url = [
-        "https://www.hlj.com/1-144-scale-30mm-eexm-s03h-forestieri-03-banh663016",
-        "https://www.hlj.com/search/?Page=1&GenreCode2=Gundam&MacroType2=Master+Grade+Kits&MacroType2=Master-Grade+Kits",
-    ]
+#     single_url = [
+#         "https://www.hlj.com/1-144-scale-30mm-eexm-s03h-forestieri-03-banh663016",
+#         "https://www.hlj.com/search/?Page=1&GenreCode2=Gundam&MacroType2=Master+Grade+Kits&MacroType2=Master-Grade+Kits",
+#     ]
 
-    scraper_ui = HLJ_scraper_ui()
+#     scraper_ui = HLJ_scraper_ui()
 
-    batcher = HLJ_product_scraper(single_url, scraper_ui)
-    result = asyncio.run(batcher.start_process())
+#     batcher = HLJ_product_scraper(single_url, scraper_ui)
+#     result = asyncio.run(batcher.start_process())
