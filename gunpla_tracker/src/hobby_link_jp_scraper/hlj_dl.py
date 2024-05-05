@@ -1,20 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import pprint
 import asyncio
 import random
 from .hlj_ui import HLJ_scraper_ui
 from rich.live import Live
 import time
 from rich import print
+from ..model import web_to_db
 
-# from file_handles import Export_to_file
 from rich.console import Console
-import httpx
 from InquirerPy import inquirer
-
-lock = asyncio.Lock()
 
 
 def extract_text(element):
@@ -34,16 +30,20 @@ def get_start_and_end_page(url):
 
 class HLJ_product_scraper:
 
-    def __init__(self, url: list[str], scraper_ui: HLJ_scraper_ui):
+    def __init__(
+        self, url: list[str], scraper_ui: HLJ_scraper_ui, web_to_db: web_to_db
+    ):
         self.url_batch = url
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
         }
         self.semaphore = asyncio.Semaphore(2)
         self.hlj_ui = scraper_ui
+        self.web_to_db = web_to_db
 
     async def start_process(self):
         scraped_products = []
+        collective_urls = []
 
         # clear console contents
         Console().clear()
@@ -53,29 +53,35 @@ class HLJ_product_scraper:
             if "search" in search_link:
 
                 start_page, end_page = get_start_and_end_page(search_link)
-                await self._extract_batch(search_link, start_page, end_page)
+                collective_urls.append(
+                    self._extract_batch(search_link, start_page, end_page)
+                )
+            collective_urls.append(search_link.strip())
 
-        # remove the urls with the word 'search'
-        self.url_batch = [url for url in self.url_batch if "search" not in url]
+        # check with db and return non-duplicate urls
+        refined_url = self.web_to_db.remove_any_duplicates(new_url=collective_urls)
 
         # create the layout and loading bar to show
-        self.hlj_ui.create_layout(len(self.url_batch))
+        self.hlj_ui.create_layout(len(refined_url))
         self.loading_bar = await self.hlj_ui.get_progress()
 
         # start and update the program live
-        with Live(self.loading_bar, refresh_per_second=2) as live:
 
-            for link in self.url_batch:
-                scraped_products.append(
-                    asyncio.create_task(self._get_product_info(link))
-                )
+        if len(refined_url) < 1:
+            return []
+        else:
+            with Live(self.loading_bar, refresh_per_second=2) as live:
 
-            scraped_results = [
-                await product_info
-                for product_info in asyncio.as_completed(scraped_products)
-            ]
-
-            live.update(self.loading_bar)
+                for link in refined_url:
+                    # print(link)
+                    scraped_products.append(
+                        asyncio.create_task(self._get_product_info(link))
+                    )
+                scraped_results = [
+                    await product_info
+                    for product_info in asyncio.as_completed(scraped_products)
+                ]
+                live.update(self.loading_bar)
 
         return scraped_results
 
@@ -116,23 +122,28 @@ class HLJ_product_scraper:
                 # Item size and weight may not be available with some products, so return None if it happens
                 if "Item Size/Weight" not in hlj_product_info:
                     hlj_product_info["Item Size/Weight"] = None
+
+                await self.hlj_ui.update_bar()
+                await self.hlj_ui.update_table(
+                    message=(
+                        f"Finished {url.strip()}"
+                        if html_response.status_code != 404
+                        else f"Error with {url.strip()}"
+                    )
+                )
+                await self.hlj_ui.update_layout()
+
+                return hlj_product_info
             else:
                 # If the link returns a 404 error, return an empty dict for the product with random code and url
-                hlj_product_info = {
-                    "url": url.strip(),
-                    "Code": f"NA_{random.randint(1000,9999)}",
-                }
-            await self.hlj_ui.update_bar()
-            await self.hlj_ui.update_table(message=f"Finished {url.strip()}")
-            await self.hlj_ui.update_layout()
-
-        return hlj_product_info
+                pass
+            # return hlj_product_info
 
     async def _extract_batch(self, page_based_url, start_page=1, end_page=2):
         batch_url = []
 
         async with self.semaphore:
-            for page in range(start_page, end_page):
+            for page in range(start_page, end_page + 1):
 
                 html_response = requests.Session().get(
                     f"{page_based_url}&Page={page}", headers=self.headers
@@ -141,9 +152,10 @@ class HLJ_product_scraper:
 
                 kits = soup.find_all("a", class_="item-img-wrapper", href=True)
                 for kit in kits:
-                    batch_url.append(f'https://www.hlj.com{kit["href"]}')
+                    batch_url.append(f'https://www.hlj.com{kit["href"]}'.strip())
 
-        self.url_batch.extend(batch_url)
+        # self.url_batch.extend(batch_url)
+        return batch_url
 
 
 # if __name__ == "__main__":

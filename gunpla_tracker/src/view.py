@@ -2,6 +2,23 @@ from rich.table import Table
 from rich.style import Style
 from datetime import datetime
 from readchar import key
+from rich.console import Console
+from rich.panel import Panel
+
+
+def table_scroll(size, gunpla_log, select):
+
+    if len(gunpla_log) + 3 > size:
+        if select < size / 2:
+            gunpla_log = gunpla_log[:size]
+        elif (select + size) / 2 > len(gunpla_log):
+            gunpla_log = gunpla_log[-size:]
+            select -= len(gunpla_log) - size
+        else:
+            gunpla_log = gunpla_log[select - size // 2 : select + size // 2]
+            select -= select - size // 2
+
+    return gunpla_log, select
 
 
 class Gunpla_Table_View:
@@ -10,36 +27,44 @@ class Gunpla_Table_View:
         self.table = None
         self.selected = Style(color="blue", bgcolor="white", bold=True)
 
-    def create_gunpla_info_table(self, gunpla_log, select, entered=False):
+    def create_warning_panel(self, message):
+
+        self.warning_panel = Panel(message, title_align="center")
+        return self.warning_panel
+
+    def create_gunpla_info_table(self, console, gunpla_log, select, entered=False):
 
         self.table = Table(title=f"Gunpla Collection {datetime.now().date()}")
-
         self.table.add_column("Code", justify="center", no_wrap=True)
         self.table.add_column("Title", no_wrap=False)
         self.table.add_column("Series", no_wrap=False)
         self.table.add_column("Item Type")
         self.table.add_column("Release Date")
 
+        size = console.height - 4
+
+        gunpla_log, select = table_scroll(size, gunpla_log, select)
+
         for i, col in enumerate(gunpla_log):
+            self.table.add_row(*col, style=self.selected if i == select else None)
             if i == select and entered == key.ENTER:
-                self.table.add_row(*col, style=self.selected)
                 return [col[0], col[1], col[3]]
-            elif i == select:
-                self.table.add_row(*col, style=self.selected)
-            else:
-                self.table.add_row(*col)
 
         return self.table
 
-    def create_gunpla_log_table(self, gunpla_log, select, entered=False):
+    def create_gunpla_log_table(self, console, gunpla_log, select, entered=False):
 
-        self.table = Table(title=f"Gunpla Log {datetime.now().date()}")
+        self.table = Table()
 
         self.table.add_column("Log ID", justify="left", no_wrap=True)
         self.table.add_column("Code", justify="center", no_wrap=True)
         self.table.add_column("Name", justify="center")
         self.table.add_column("Item Type", justify="center")
         self.table.add_column("Status", justify="left")
+
+        size = console.height - 4
+
+        gunpla_log, select = table_scroll(size, gunpla_log, select)
 
         for i, col in enumerate(gunpla_log):
             if i == select and (entered == key.ENTER or entered == key.DELETE):

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "gunpla-tracker"
+version = "0.1.0"
+description = "A basic CLI tool to keep track of gunpla builds"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+rich = "^13.7.1"
+beautifulsoup4 = "^4.12.3"
+inquirerpy = "^0.3.4"
+readchar = "^4.0.6"
+asyncio = "^3.4.3"
+requests = "^2.31.0"
+
+[tool.poetry.scripts]
+gunpla-tracker = "gunpla_tracker.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

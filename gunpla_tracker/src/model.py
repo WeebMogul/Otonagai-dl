@@ -4,7 +4,39 @@ from InquirerPy import inquirer
 import time
 import json
 
-DB_PATH = "./Data/gunpla.db"
+DB_PATH = "Data/gunpla.db"
+
+
+def collect_choices(choice_dict):
+
+    result_dict = {}
+    for category in choice_dict:
+        if category[0] not in result_dict:
+            result_dict[str(category[0])] = None
+
+    result_dict["All"] = None
+    return result_dict
+
+
+def advanced_search(categories, item_types, series):
+    search_title = inquirer.text("Which product you want to search ?").execute()
+
+    search_category = inquirer.text(
+        message="Which category ?",
+        completer=categories,
+    ).execute()
+
+    search_item_type = inquirer.text(
+        message="Which item type ?",
+        completer=item_types,
+    ).execute()
+
+    search_series = inquirer.text(
+        message="From which series ?",
+        completer=series,
+    ).execute()
+
+    return search_title, search_category, search_item_type, search_series
 
 
 class gunpla_db(ABC):
@@ -30,12 +62,10 @@ class web_to_db(gunpla_db):
     def remove_any_duplicates(self, new_url):
 
         self.cursor.execute("select URL from gunpla")
-        existing_url = set(link[0] for link in self.cursor.fetchall())
+        existing_url = set(link[0].strip() for link in self.cursor.fetchall())
         new_url = set(new_url)
 
-        return list(existing_url.symmetric_difference(new_url))
-
-        # time.sleep(20)
+        return list(new_url - existing_url)
 
     def delete_from_table(self):
         return super().delete_from_table()
@@ -63,11 +93,12 @@ class web_to_db(gunpla_db):
                         product["Item Size/Weight"],
                     ),
                 )
-                self.connection.commit()
             except sqlite3.IntegrityError:
                 print(
                     "Products are already downloaded. Please add new ones in the url file."
                 )
+                break
+            except KeyError:
                 break
         time.sleep(3)
         self.connection.commit()
@@ -85,44 +116,34 @@ class gunpla_search_db(gunpla_db):
     def delete_from_table(self):
         return super().delete_from_table()
 
-    def _retieve_category(self):
-
-        category_dict = {}
-        self.cursor.execute("select Category from gunpla")
-        for category in self.cursor.fetchall():
-            if category[0] not in category_dict:
-                category_dict[str(category[0])] = None
-
-        category_dict["All"] = None
-        return category_dict
-
     def view_table(self):
 
-        # search_title = inquirer.text("Which product you want to search ?").execute()
-
-        # search_item_type = inquirer.text(
-        #     message="Which category ?",
-        #     completer=self._retieve_category(),
-        # ).execute()
-        search_title = ""
-        search_item_type = ""
+        search_category = collect_choices(
+            self.cursor.execute("select Category from gunpla")
+        )
+        item_type_category = collect_choices(
+            self.cursor.execute("select `Item Type` from gunpla")
+        )
+        series_category = collect_choices(
+            self.cursor.execute("select Series from gunpla")
+        )
+        title, category, item_type, series = advanced_search(
+            search_category, item_type_category, series_category
+        )
 
         with self.connection:
             self.cursor.execute(
-                "SELECT Code, Title, Series, `Item Type`, `Release Date` from gunpla where Title like ? and `Item Type` like ? order by `Release Date` desc limit 20;",
-                # "and Series like ? "
-                # "and `Item Type` like ? order by `Release Date` desc limit 20;",
+                "SELECT Code, Title, Series, `Item Type`, `Release Date` from gunpla where Title like ? and Category like ? and `Item Type` like ? and Series like ? order by `Release Date` desc;",
                 (
-                    f"%{search_title}%",
-                    # f"%{''}%",
-                    f"%{search_item_type}%",
+                    f"%{title}%",
+                    f"%{category if category != 'All' else ''}%",
+                    f"%{item_type if item_type != 'All' else ''}%",
+                    f"%{series if series != 'All' else ''}%",
                 ),
             )
 
             self.result = self.cursor.fetchall()
 
-            if len(self.result) < 1:
-                return False
             return self.result
 
     def insert_to_table(self, Code, Title, item_type):
