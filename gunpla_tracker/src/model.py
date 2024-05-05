@@ -116,8 +116,7 @@ class gunpla_search_db(gunpla_db):
     def delete_from_table(self):
         return super().delete_from_table()
 
-    def view_table(self):
-
+    def advanced_view_table(self):
         search_category = collect_choices(
             self.cursor.execute("select Category from gunpla")
         )
@@ -140,6 +139,17 @@ class gunpla_search_db(gunpla_db):
                     f"%{item_type if item_type != 'All' else ''}%",
                     f"%{series if series != 'All' else ''}%",
                 ),
+            )
+
+            self.result = self.cursor.fetchall()
+
+            return self.result
+
+    def view_table(self):
+
+        with self.connection:
+            self.cursor.execute(
+                "SELECT Code, Title, Series, `Item Type`, `Release Date` from gunpla order by `Release Date` desc;",
             )
 
             self.result = self.cursor.fetchall()

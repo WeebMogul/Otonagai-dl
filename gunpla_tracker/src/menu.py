@@ -87,6 +87,11 @@ def menu():
             search_view = Gunpla_Table_View()
             navigate_search_table(search_db, search_view).navigate_table()
 
+        # if menu_choice == "Advanced search Gundam Kits":
+        #     os.system("cls")
+        #     search_view = Gunpla_Table_View()
+        #     navigate_search_table(search_db, search_view).navigate_table()
+
         if menu_choice == "View and update Gunpla Log":
             os.system("cls")
             log_view = Gunpla_Table_View()

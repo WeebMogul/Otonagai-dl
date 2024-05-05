@@ -47,7 +47,12 @@ class navigate_search_table(Navigation):
     def navigate_table(self):
         selected = 0
 
-        search_result = self.model.view_table()
+        if inquirer.confirm(
+            "Do you want to proceed with advanced search or regular search"
+        ).execute():
+            search_result = self.model.advanced_view_table()
+        else:
+            search_result = self.model.view_table()
 
         self._create_warning_panel(search_result)
 
@@ -78,7 +83,7 @@ class navigate_search_table(Navigation):
 
                     else:
                         break
-
+                    os.system("cls")
                     live.start(refresh=True)
 
                 if ch == key.ESC:
@@ -88,7 +93,6 @@ class navigate_search_table(Navigation):
 
                         break
                     else:
-
                         os.system("cls")
                         live.start(refresh=True)
 
