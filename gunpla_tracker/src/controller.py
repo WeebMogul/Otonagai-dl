@@ -1,16 +1,10 @@
-import sqlite3
-from .view import Gunpla_Table_View
 from rich.console import Console
 from InquirerPy import inquirer
-import re
 from abc import ABC, abstractmethod
 from readchar import readkey, key
 from InquirerPy import inquirer
-from datetime import datetime
-from .model import gunpla_log_db, gunpla_search_db
 from rich.live import Live
 import time
-import sys
 import os
 
 console = Console()
@@ -23,13 +17,18 @@ class Navigation(ABC):
         pass
 
     @abstractmethod
-    def _create_warning_panel():
+    def no_data_warning(self):
         pass
 
 
-class navigate_search_table(Navigation):
+class search_table_navigation(Navigation):
 
-    def _create_warning_panel(self, search_result):
+    def __init__(self, model, view):
+
+        self.model = model
+        self.view = view
+
+    def no_data_warning(self, search_result):
         if len(search_result) < 1:
             console.print(
                 self.view.create_warning_panel(
@@ -38,11 +37,6 @@ class navigate_search_table(Navigation):
             )
             time.sleep(5)
             return None
-
-    def __init__(self, model, view):
-
-        self.model = model
-        self.view = view
 
     def navigate_table(self):
         selected = 0
@@ -54,7 +48,7 @@ class navigate_search_table(Navigation):
         else:
             search_result = self.model.view_table()
 
-        self._create_warning_panel(search_result)
+        self.no_data_warning(search_result)
 
         with Live(
             self.view.create_gunpla_info_table(console, search_result, selected),
@@ -104,14 +98,14 @@ class navigate_search_table(Navigation):
                 )
 
 
-class navigate_log_table:
+class log_table_navigation:
 
     def __init__(self, model, view):
 
         self.model = model
         self.view = view
 
-    def _create_warning_panel(self, log_result):
+    def no_data_warning(self, log_result):
         if len(log_result) < 1:
             console.print(
                 self.view.create_warning_panel(
@@ -125,7 +119,7 @@ class navigate_log_table:
         selected = 0
 
         log_result = self.model.view_table()
-        self._create_warning_panel(log_result)
+        self.no_data_warning(log_result)
 
         console.clear()
         with Live(

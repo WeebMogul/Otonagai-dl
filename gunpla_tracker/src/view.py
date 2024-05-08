@@ -6,6 +6,14 @@ from rich.console import Console
 from rich.panel import Panel
 
 
+def no_downloads():
+
+    return Panel(
+        "Please add new product urls to the url file. The ones you entered already exist or invalid",
+        title_align="center",
+    )
+
+
 def table_scroll(size, gunpla_log, select):
 
     if len(gunpla_log) + 3 > size:

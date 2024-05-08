@@ -7,10 +7,11 @@ from .hlj_ui import HLJ_scraper_ui
 from rich.live import Live
 import time
 from rich import print
-from ..model import web_to_db
-
+from ..model import web_to_search_db
+from .hlj_batch import extract_batch
 from rich.console import Console
 from InquirerPy import inquirer
+from multiprocessing import Pool
 
 
 def extract_text(element):
@@ -31,7 +32,10 @@ def get_start_and_end_page(url):
 class HLJ_product_scraper:
 
     def __init__(
-        self, url: list[str], scraper_ui: HLJ_scraper_ui, web_to_db: web_to_db
+        self,
+        url: list[str],
+        scraper_ui: HLJ_scraper_ui,
+        web_to_search_db: web_to_search_db,
     ):
         self.url_batch = url
         self.headers = {
@@ -39,48 +43,52 @@ class HLJ_product_scraper:
         }
         self.semaphore = asyncio.Semaphore(2)
         self.hlj_ui = scraper_ui
-        self.web_to_db = web_to_db
+        self.search_db_bridge = web_to_search_db
 
     async def start_process(self):
         scraped_products = []
-        collective_urls = []
+        scraped_results = []
 
         # clear console contents
         Console().clear()
 
-        # If the link contains multiple items, extract separate links from the list of pages specified
-        for search_link in self.url_batch:
-            if "search" in search_link:
+        # remove any links not related to hobby link japan
+        self.url_batch = list(filter(lambda x: "hlj" in x, self.url_batch))
 
-                start_page, end_page = get_start_and_end_page(search_link)
-                collective_urls.append(
-                    self._extract_batch(search_link, start_page, end_page)
-                )
-            collective_urls.append(search_link.strip())
+        # separate links into page and non-page urls
+        page_urls = list(filter(lambda x: "search" in x, self.url_batch))
+        non_page_urls = list(filter(lambda x: "search" not in x, self.url_batch))
+
+        # If the link contains multiple items, extract separate links from the list of pages specified
+
+        # for url in page_urls:
+        #     non_page_urls.append(await extract_batch(url, self.semaphore, self.headers))
 
         # check with db and return non-duplicate urls
-        refined_url = self.web_to_db.remove_any_duplicates(new_url=collective_urls)
+        unique_urls = self.search_db_bridge.remove_any_duplicates(new_url=non_page_urls)
 
         # create the layout and loading bar to show
-        self.hlj_ui.create_layout(len(refined_url))
+        self.hlj_ui.create_layout(len(unique_urls))
         self.loading_bar = await self.hlj_ui.get_progress()
 
         # start and update the program live
 
-        if len(refined_url) < 1:
+        if len(unique_urls) < 1:
             return []
         else:
             with Live(self.loading_bar, refresh_per_second=2) as live:
 
-                for link in refined_url:
-                    # print(link)
-                    scraped_products.append(
-                        asyncio.create_task(self._get_product_info(link))
+                scraped_products = list(
+                    map(
+                        lambda url: asyncio.create_task(self._get_product_info(url)),
+                        unique_urls,
                     )
-                scraped_results = [
-                    await product_info
-                    for product_info in asyncio.as_completed(scraped_products)
-                ]
+                )
+
+                for results in asyncio.as_completed(scraped_products):
+
+                    scraped_results.append(await results)
+
                 live.update(self.loading_bar)
 
         return scraped_results
@@ -138,24 +146,6 @@ class HLJ_product_scraper:
                 # If the link returns a 404 error, return an empty dict for the product with random code and url
                 pass
             # return hlj_product_info
-
-    async def _extract_batch(self, page_based_url, start_page=1, end_page=2):
-        batch_url = []
-
-        async with self.semaphore:
-            for page in range(start_page, end_page + 1):
-
-                html_response = requests.Session().get(
-                    f"{page_based_url}&Page={page}", headers=self.headers
-                )
-                soup = BeautifulSoup(html_response.text, "lxml")
-
-                kits = soup.find_all("a", class_="item-img-wrapper", href=True)
-                for kit in kits:
-                    batch_url.append(f'https://www.hlj.com{kit["href"]}'.strip())
-
-        # self.url_batch.extend(batch_url)
-        return batch_url
 
 
 # if __name__ == "__main__":

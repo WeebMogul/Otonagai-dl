@@ -2,20 +2,19 @@ import sqlite3
 from abc import ABC, abstractmethod
 from InquirerPy import inquirer
 import time
-import json
 
 DB_PATH = "Data/gunpla.db"
 
 
-def collect_choices(choice_dict):
+def collect_options(choice_dict):
 
-    result_dict = {}
+    category_dict = {}
     for category in choice_dict:
-        if category[0] not in result_dict:
-            result_dict[str(category[0])] = None
+        if category[0] not in category_dict:
+            category_dict[str(category[0])] = None
 
-    result_dict["All"] = None
-    return result_dict
+    category_dict["All"] = None
+    return category_dict
 
 
 def advanced_search(categories, item_types, series):
@@ -39,21 +38,7 @@ def advanced_search(categories, item_types, series):
     return search_title, search_category, search_item_type, search_series
 
 
-class gunpla_db(ABC):
-    @abstractmethod
-    def view_table(self):
-        pass
-
-    @abstractmethod
-    def insert_to_table(self):
-        pass
-
-    @abstractmethod
-    def delete_from_table(self):
-        pass
-
-
-class web_to_db(gunpla_db):
+class web_to_search_db:
 
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
@@ -66,12 +51,6 @@ class web_to_db(gunpla_db):
         new_url = set(new_url)
 
         return list(new_url - existing_url)
-
-    def delete_from_table(self):
-        return super().delete_from_table()
-
-    def view_table(self):
-        return super().view_table()
 
     def insert_to_table(self, products):
 
@@ -104,7 +83,7 @@ class web_to_db(gunpla_db):
         self.connection.commit()
 
 
-class gunpla_search_db(gunpla_db):
+class gunpla_search_db:
 
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
@@ -113,17 +92,14 @@ class gunpla_search_db(gunpla_db):
             "CREATE TABLE IF NOT EXISTS gunpla (Title text, URL text, Code text not null primary key, `JAN Code` text, `Release Date` date, Category text, Series text, `Item Type` text, `Manufacturer` text, `Item Size/Weight` text)"
         )
 
-    def delete_from_table(self):
-        return super().delete_from_table()
-
     def advanced_view_table(self):
-        search_category = collect_choices(
+        search_category = collect_options(
             self.cursor.execute("select Category from gunpla")
         )
-        item_type_category = collect_choices(
+        item_type_category = collect_options(
             self.cursor.execute("select `Item Type` from gunpla")
         )
-        series_category = collect_choices(
+        series_category = collect_options(
             self.cursor.execute("select Series from gunpla")
         )
         title, category, item_type, series = advanced_search(
@@ -188,7 +164,7 @@ class gunpla_search_db(gunpla_db):
             print(f"{Title} ({Code}) has been added to the log.")
 
 
-class gunpla_log_db(gunpla_db):
+class gunpla_log_db:
 
     def __init__(self):
         self.connection = sqlite3.connect(DB_PATH)
@@ -249,6 +225,3 @@ class gunpla_log_db(gunpla_db):
                         self.change_position(pos, pos - 1)
 
         return True
-
-    def insert_to_table(self):
-        return super().insert_to_table()

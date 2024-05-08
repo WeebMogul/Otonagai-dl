@@ -1,0 +1,124 @@
+import os
+from rich.console import Console
+import asyncio
+import time
+from .view import no_downloads
+from .hobby_link_jp_scraper.hlj_batch import extract_batch
+from .model import web_to_search_db
+from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
+from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
+import logging
+import asyncio
+from functools import wraps
+
+# logging.basicConfig(level=logging.INFO)
+
+URL_FILE_PATH = rf".\Data\URLs.txt"
+DATA_FOLDER_PATH = rf".\Data"
+console = Console()
+
+
+def create_data_contents():
+
+    if not os.path.exists(DATA_FOLDER_PATH):
+        os.mkdir(DATA_FOLDER_PATH)
+        with open(URL_FILE_PATH, "w") as f:
+            f.write("")
+
+
+def extract_urls_from_file():
+    text_file_urls = []
+    with open(URL_FILE_PATH, "rb") as f:
+        for line in f.readlines():
+            text_file_urls.append(line.decode().strip())
+
+    return text_file_urls
+
+
+def check_if_page_number_is_int(func):
+    @wraps(func)
+    def wrapper_function(start_page, end_page):
+        try:
+            start_page = int(start_page)
+            end_page = int(end_page)
+        except ValueError:
+            print("it sucks")
+            time.sleep(10)
+        return func(start_page, end_page)
+
+    return wrapper_function
+
+
+def start_bigger_than_end(func):
+    @wraps(func)
+    def wrapper_function(start_page, end_page):
+        if start_page > end_page:
+            print("Not working")
+            time.sleep(10)
+        return func(start_page, end_page)
+
+    return wrapper_function
+
+
+@check_if_page_number_is_int
+@start_bigger_than_end
+def add_page_nos(start_page, end_page):
+    return start_page, end_page
+
+
+# add_page_nos(start_page=3, end_page=1)
+# # print(ex)
+
+
+def use_edit_file(console, inquirer):
+
+    console.clear()
+    console.print("Editing file")
+
+    with open(URL_FILE_PATH, "r") as f:
+        existing_urls = f.read()
+
+    result = inquirer.text(
+        message="URLs:",
+        multiline=True,
+        long_instruction="Press escape and then enter to finish editing.",
+        vi_mode=True,
+        default=existing_urls,
+    ).execute()
+
+    with open(URL_FILE_PATH, "wb") as f:
+        f.write(result.encode())
+
+
+def filter_urls(urls):
+
+    # remove any links not related to hobby link japan
+    hobbylink_urls = list(filter(lambda x: "hlj" in x, urls))
+
+    # separate links into page and non-page urls
+    page_urls = list(filter(lambda x: "search" in x, hobbylink_urls))
+    non_page_urls = list(filter(lambda x: "search" not in x, hobbylink_urls))
+
+    return page_urls, non_page_urls
+
+
+def extract_from_page_links(page_urls, start_page, end_page):
+
+    extracted_urls = []
+    extracted_urls.extend(
+        asyncio.run(extract_batch(page_urls, start_page=start_page, end_page=end_page))
+    )
+
+    return extracted_urls
+
+
+def add_to_search_db(extracted_urls, scraper_ui, search_db_conn):
+    batcher = HLJ_product_scraper(
+        extracted_urls, scraper_ui=scraper_ui, web_to_search_db=search_db_conn
+    )
+    batch_result = asyncio.run(batcher.start_process())
+    if len(batch_result) < 1:
+        console.print(no_downloads())
+        time.sleep(5)
+    else:
+        search_db_conn.insert_to_table(batch_result)
