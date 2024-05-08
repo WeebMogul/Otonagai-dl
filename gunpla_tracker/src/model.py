@@ -17,7 +17,7 @@ def collect_options(choice_dict):
     return category_dict
 
 
-def advanced_search(categories, item_types, series):
+def advanced_search(categories, item_types, series, manufacturer):
     search_title = inquirer.text("Which product you want to search ?").execute()
 
     search_category = inquirer.text(
@@ -35,7 +35,18 @@ def advanced_search(categories, item_types, series):
         completer=series,
     ).execute()
 
-    return search_title, search_category, search_item_type, search_series
+    search_manufacturer = inquirer.text(
+        message="From which manufacturer ?",
+        completer=manufacturer,
+    ).execute()
+
+    return (
+        search_title,
+        search_category,
+        search_item_type,
+        search_series,
+        search_manufacturer,
+    )
 
 
 class web_to_search_db:
@@ -102,18 +113,24 @@ class gunpla_search_db:
         series_category = collect_options(
             self.cursor.execute("select Series from gunpla")
         )
-        title, category, item_type, series = advanced_search(
-            search_category, item_type_category, series_category
+
+        manufacturer_category = collect_options(
+            self.cursor.execute("select Manufacturer from gunpla")
+        )
+
+        title, category, item_type, series, manufacturer = advanced_search(
+            search_category, item_type_category, series_category, manufacturer_category
         )
 
         with self.connection:
             self.cursor.execute(
-                "SELECT Code, Title, Series, `Item Type`, `Release Date` from gunpla where Title like ? and Category like ? and `Item Type` like ? and Series like ? order by `Release Date` desc;",
+                "SELECT Code, Title, Series, `Item Type`, Manufacturer , `Release Date` from gunpla where Title like ? and Category like ? and `Item Type` like ? and Series like ?  and Manufacturer like ? order by `Release Date` desc;",
                 (
                     f"%{title}%",
                     f"%{category if category != 'All' else ''}%",
                     f"%{item_type if item_type != 'All' else ''}%",
                     f"%{series if series != 'All' else ''}%",
+                    f"%{manufacturer if manufacturer != 'All' else ''}%",
                 ),
             )
 
@@ -125,7 +142,7 @@ class gunpla_search_db:
 
         with self.connection:
             self.cursor.execute(
-                "SELECT Code, Title, Series, `Item Type`, `Release Date` from gunpla order by `Release Date` desc;",
+                "SELECT Code, Title, Series, `Item Type`, Manufacturer , `Release Date` from gunpla order by `Release Date` desc;",
             )
 
             self.result = self.cursor.fetchall()

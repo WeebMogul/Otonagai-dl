@@ -35,32 +35,21 @@ def extract_urls_from_file():
     return text_file_urls
 
 
-def check_if_page_number_is_int(func):
-    @wraps(func)
+def start_bigger_than_end(func):
     def wrapper_function(start_page, end_page):
         try:
             start_page = int(start_page)
             end_page = int(end_page)
+            if start_page > end_page:
+                print("\n Starting page is bigger than ending page. Try again")
         except ValueError:
-            print("it sucks")
-            time.sleep(10)
+            # print("Please add numbers next time")
+            return func(None, None)
         return func(start_page, end_page)
 
     return wrapper_function
 
 
-def start_bigger_than_end(func):
-    @wraps(func)
-    def wrapper_function(start_page, end_page):
-        if start_page > end_page:
-            print("Not working")
-            time.sleep(10)
-        return func(start_page, end_page)
-
-    return wrapper_function
-
-
-@check_if_page_number_is_int
 @start_bigger_than_end
 def add_page_nos(start_page, end_page):
     return start_page, end_page

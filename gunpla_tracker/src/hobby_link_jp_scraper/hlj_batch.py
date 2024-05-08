@@ -41,12 +41,12 @@ async def extract_batch(page_based_url, start_page, end_page):
     # start_page, end_page = _get_page_nos(page_based_url)
 
     async with semaphore:
-        for page in range(start_page, end_page + 1):
+        for page in range(start_page, end_page):
 
             html_response = requests.Session().get(
                 f"{page_based_url}&Page={page}", headers=headers
             )
-            soup = BeautifulSoup(html_response.text, "lxml")
+            soup = BeautifulSoup(html_response.text, "html.parser")
 
             kits = soup.find_all("a", class_="item-img-wrapper", href=True)
             for kit in kits:

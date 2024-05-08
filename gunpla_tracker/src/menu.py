@@ -13,8 +13,6 @@ from .utils import (
     filter_urls,
     add_to_search_db,
     extract_urls_from_file,
-    check_if_page_number_is_int,
-    start_bigger_than_end,
     add_page_nos,
 )
 import os
@@ -66,32 +64,22 @@ def menu():
             text_urls = extract_urls_from_file()
             page_urls, non_page_urls = filter_urls(text_urls)
 
-            # try:
-            start_page = input("Please enter the starting page : ")
-            end_page = input("Please enter the ending page : ")
+            for url in page_urls:
 
-            # if start_page > end_page:
-            #     print(
-            #         "Start page is bigger than the end page. Please try adding the correct page nos"
-            #     )
-            #     time.sleep(5)
-            # else:
+                print(f"Please add the pages to extract the products from {url}\n")
+                start_page = input("Please enter the starting page : ")
+                end_page = input("Please enter the ending page : ")
+                start_page, end_page = add_page_nos(start_page, end_page)
 
-            # @check_if_page_number_is_int
-            # @start_bigger_than_end
-            start_page, end_page = add_page_nos(start_page, end_page)
+                if start_page is not None and end_page is not None:
+                    non_page_urls.extend(
+                        extract_from_page_links(
+                            url, start_page=start_page, end_page=end_page
+                        )
+                    )
 
-            # for i in range(start_page, end_page):
-            #     print(i)
-
-            # for url in page_urls:
-            #     non_page_urls.extend(extract_from_page_links(url))
-
-            # add_to_search_db(
-            #     extracted_urls=non_page_urls,
-            #     scraper_ui=HLJ_scraper_ui(),
-            #     search_db_conn=web_to_search_db(),
-            # )
-            # except ValueError:
-            #     print("Please enter a number instead. Thank you.")
-            #     time.sleep(5)
+                add_to_search_db(
+                    extracted_urls=non_page_urls,
+                    scraper_ui=HLJ_scraper_ui(),
+                    search_db_conn=web_to_search_db(),
+                )

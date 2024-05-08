@@ -52,23 +52,21 @@ class HLJ_product_scraper:
         # clear console contents
         Console().clear()
 
-        # remove any links not related to hobby link japan
-        self.url_batch = list(filter(lambda x: "hlj" in x, self.url_batch))
+        # # remove any links not related to hobby link japan
+        # self.url_batch = list(filter(lambda x: "hlj" in x, self.url_batch))
 
-        # separate links into page and non-page urls
-        page_urls = list(filter(lambda x: "search" in x, self.url_batch))
-        non_page_urls = list(filter(lambda x: "search" not in x, self.url_batch))
-
-        # If the link contains multiple items, extract separate links from the list of pages specified
-
-        # for url in page_urls:
-        #     non_page_urls.append(await extract_batch(url, self.semaphore, self.headers))
+        # # separate links into page and non-page urls
+        # page_urls = list(filter(lambda x: "search" in x, self.url_batch))
+        # non_page_urls = list(filter(lambda x: "search" not in x, self.url_batch))
 
         # check with db and return non-duplicate urls
-        unique_urls = self.search_db_bridge.remove_any_duplicates(new_url=non_page_urls)
+        unique_urls = self.search_db_bridge.remove_any_duplicates(
+            new_url=self.url_batch
+        )
+        print(len(unique_urls))
 
         # create the layout and loading bar to show
-        self.hlj_ui.create_layout(len(unique_urls))
+        self.hlj_ui.create_layout(total_length=len(unique_urls))
         self.loading_bar = await self.hlj_ui.get_progress()
 
         # start and update the program live
@@ -100,7 +98,7 @@ class HLJ_product_scraper:
             # check if the url response isn't giving a 404 error
             if html_response.status_code != 404:
 
-                soup = BeautifulSoup(html_response.text, "lxml")
+                soup = BeautifulSoup(html_response.text, "html.parser")
                 hlj_product_info = {
                     "Title": extract_text(soup.find("h2", class_="page-title")),
                     "URL": url.strip(),

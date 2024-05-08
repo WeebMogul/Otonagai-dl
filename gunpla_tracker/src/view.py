@@ -4,12 +4,24 @@ from datetime import datetime
 from readchar import key
 from rich.console import Console
 from rich.panel import Panel
+from rich.markdown import Markdown
 
 
 def no_downloads():
 
     return Panel(
-        "Please add new product urls to the url file. The ones you entered already exist or invalid",
+        Markdown(
+            """
+            
+            There is an issue with the urls you have entered in the file. Some of the issues could be:
+            
+            - No urls entered.
+            - You entered a text instead of a number with the page-related input.
+            - The starting page number is more than the ending page number.
+            
+            Try again.
+            """
+        ),
         title_align="center",
     )
 
@@ -47,6 +59,7 @@ class Gunpla_Table_View:
         self.table.add_column("Title", no_wrap=False)
         self.table.add_column("Series", no_wrap=False)
         self.table.add_column("Item Type")
+        self.table.add_column("Manufacturer")
         self.table.add_column("Release Date")
 
         size = console.height - 4
