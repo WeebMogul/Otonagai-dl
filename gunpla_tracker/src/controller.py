@@ -6,6 +6,7 @@ from InquirerPy import inquirer
 from rich.live import Live
 import time
 import os
+from rich.panel import Panel
 
 console = Console()
 
@@ -23,18 +24,15 @@ class Navigation(ABC):
 
 class search_table_navigation(Navigation):
 
-    def __init__(self, model, view):
+    def __init__(self, model, view, console):
 
         self.model = model
         self.view = view
+        self.console = console
 
     def no_data_warning(self, search_result):
         if len(search_result) < 1:
-            console.print(
-                self.view.create_warning_panel(
-                    "There is no data available. Please add new links to the database"
-                )
-            )
+            console.print(self.view.database_warning_panel())
             time.sleep(5)
             return None
 
@@ -51,7 +49,7 @@ class search_table_navigation(Navigation):
         self.no_data_warning(search_result)
 
         with Live(
-            self.view.create_gunpla_info_table(console, search_result, selected),
+            self.view.create_gunpla_info_table(self.console, search_result, selected),
             auto_refresh=False,
         ) as live:
 
@@ -75,24 +73,22 @@ class search_table_navigation(Navigation):
                             search_result[selected][2],
                         )
 
-                    else:
-                        break
                     os.system("cls")
                     live.start(refresh=True)
+                    continue
+                    # live.refresh()
 
                 if ch == key.ESC:
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():
-
                         break
-                    else:
-                        os.system("cls")
-                        live.start(refresh=True)
+
+                # os.system("cls")
 
                 live.update(
                     self.view.create_gunpla_info_table(
-                        console, search_result, selected
+                        self.console, search_result, selected
                     ),
                     refresh=True,
                 )
@@ -100,18 +96,15 @@ class search_table_navigation(Navigation):
 
 class log_table_navigation:
 
-    def __init__(self, model, view):
+    def __init__(self, model, view, console):
 
         self.model = model
         self.view = view
+        self.console = console
 
     def no_data_warning(self, log_result):
         if len(log_result) < 1:
-            console.print(
-                self.view.create_warning_panel(
-                    "There is no merchandise in the log. Add the products to the database and then change it."
-                )
-            )
+            self.console.print(self.view.log_warning_panel())
             time.sleep(5)
             return None
 
@@ -121,10 +114,10 @@ class log_table_navigation:
         log_result = self.model.view_table()
         self.no_data_warning(log_result)
 
-        console.clear()
+        self.console.clear()
         with Live(
             self.view.create_gunpla_log_table(
-                console,
+                self.console,
                 log_result,
                 selected,
             ),
@@ -138,7 +131,7 @@ class log_table_navigation:
                 ch = readkey()
 
                 selected_gunpla = self.view.create_gunpla_log_table(
-                    console, log_result, selected, ch
+                    self.console, log_result, selected, ch
                 )
 
                 if ch == key.UP:
@@ -150,11 +143,13 @@ class log_table_navigation:
                     self.model.update_table(selected_gunpla[0])
 
                     log_result = self.model.view_table()
+
+                    # live.update(Panel("Log Table"))
                     selected_gunpla = self.view.create_gunpla_log_table(
-                        console, log_result, selected, ch
+                        self.console, log_result, selected, ch
                     )
 
-                    console.clear()
+                    os.system("cls")
                     live.start()
                     live.refresh()
 
@@ -164,10 +159,10 @@ class log_table_navigation:
 
                     log_result = self.model.view_table()
                     selected_gunpla = self.view.create_gunpla_log_table(
-                        console, log_result, selected, ch
+                        self.console, log_result, selected, ch
                     )
 
-                    console.clear()
+                    os.system("cls")
                     live.start()
                     live.refresh()
 
@@ -181,6 +176,8 @@ class log_table_navigation:
                         live.start(refresh=True)
 
                 live.update(
-                    self.view.create_gunpla_log_table(console, log_result, selected),
+                    self.view.create_gunpla_log_table(
+                        self.console, log_result, selected
+                    ),
                     refresh=True,
                 )

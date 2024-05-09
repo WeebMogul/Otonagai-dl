@@ -55,10 +55,6 @@ def add_page_nos(start_page, end_page):
     return start_page, end_page
 
 
-# add_page_nos(start_page=3, end_page=1)
-# # print(ex)
-
-
 def use_edit_file(console, inquirer):
 
     console.clear()
@@ -82,7 +78,7 @@ def use_edit_file(console, inquirer):
 def filter_urls(urls):
 
     # remove any links not related to hobby link japan
-    hobbylink_urls = list(filter(lambda x: "hlj" in x, urls))
+    hobbylink_urls = list(filter(lambda x: "hlj.com" in x, urls))
 
     # separate links into page and non-page urls
     page_urls = list(filter(lambda x: "search" in x, hobbylink_urls))

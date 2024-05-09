@@ -52,18 +52,10 @@ class HLJ_product_scraper:
         # clear console contents
         Console().clear()
 
-        # # remove any links not related to hobby link japan
-        # self.url_batch = list(filter(lambda x: "hlj" in x, self.url_batch))
-
-        # # separate links into page and non-page urls
-        # page_urls = list(filter(lambda x: "search" in x, self.url_batch))
-        # non_page_urls = list(filter(lambda x: "search" not in x, self.url_batch))
-
         # check with db and return non-duplicate urls
         unique_urls = self.search_db_bridge.remove_any_duplicates(
             new_url=self.url_batch
         )
-        print(len(unique_urls))
 
         # create the layout and loading bar to show
         self.hlj_ui.create_layout(total_length=len(unique_urls))
@@ -129,6 +121,7 @@ class HLJ_product_scraper:
                 if "Item Size/Weight" not in hlj_product_info:
                     hlj_product_info["Item Size/Weight"] = None
 
+                # update ui details
                 await self.hlj_ui.update_bar()
                 await self.hlj_ui.update_table(
                     message=(
@@ -141,19 +134,4 @@ class HLJ_product_scraper:
 
                 return hlj_product_info
             else:
-                # If the link returns a 404 error, return an empty dict for the product with random code and url
                 pass
-            # return hlj_product_info
-
-
-# if __name__ == "__main__":
-
-#     single_url = [
-#         "https://www.hlj.com/1-144-scale-30mm-eexm-s03h-forestieri-03-banh663016",
-#         "https://www.hlj.com/search/?Page=1&GenreCode2=Gundam&MacroType2=Master+Grade+Kits&MacroType2=Master-Grade+Kits",
-#     ]
-
-#     scraper_ui = HLJ_scraper_ui()
-
-#     batcher = HLJ_product_scraper(single_url, scraper_ui)
-#     result = asyncio.run(batcher.start_process())

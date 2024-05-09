@@ -33,14 +33,14 @@ class HLJ_scraper_ui:
             "Scraping product info", total=total_length
         )
 
-        self.scrape_layout = Layout(ratio=1, minimum_size=8)
-        self.scrape_layout.split_column(
+        self.scraper_layout = Layout(ratio=1, minimum_size=8)
+        self.scraper_layout.split_column(
             Layout(name="left", ratio=1), Layout(name="right", ratio=6)
         )
 
     async def update_layout(self):
-        self.scrape_layout["left"].update(self.loading_panel)
-        self.scrape_layout["right"].update(self.table_panel)
+        self.scraper_layout["left"].update(self.loading_panel)
+        self.scraper_layout["right"].update(self.table_panel)
 
     async def get_progress(self):
 
@@ -54,7 +54,7 @@ class HLJ_scraper_ui:
 
         await self.update_layout()
 
-        return self.scrape_layout
+        return self.scraper_layout
 
     async def update_bar(self):
         self.scrape_bar.update(self.download_progress_task, advance=1)
@@ -85,27 +85,3 @@ class HLJ_page_scraper_ui(HLJ_scraper_ui):
 
     def update_bar(self) -> None:
         self.scrape_bar.update(self.download_progress_task, advance=1)
-
-
-async def do_shit(hlj_ui, num):
-    await hlj_ui.update_bar()
-    await hlj_ui.update_table(num, f"Adding {num} to table")
-    await hlj_ui.update_layout()
-
-
-async def main():
-
-    hlj_ui = HLJ_scraper_ui()
-    hlj_ui.create_layout(100)
-
-    loading_bar = await hlj_ui.get_progress()
-
-    with Live(loading_bar) as live:
-        for num in range(1, 100):
-            time.sleep(0.5)
-            await do_shit(hlj_ui, num)
-            live.update(loading_bar)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

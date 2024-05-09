@@ -25,41 +25,46 @@ def menu():
     create_data_contents()
     search_db = gunpla_search_db()
     log_db = gunpla_log_db()
+    console = Console()
 
     while True:
 
-        os.system("cls")
+        console.clear()
         menu_choice = inquirer.select(
             message="Welcome to the Gunpla Tracker. \nPlease select any option to proceed",
             choices=[
-                "Add Gundam Kits to database",
-                "Search Gundam Kits",
-                "View and update Gunpla Log",
-                "Open URL file",
+                "Extract Merch info",
+                "Merchandise Database",
+                "Merchandise Log",
+                "URLs to download",
                 "Exit",
             ],
         ).execute()
 
-        if menu_choice == "Search Gundam Kits":
-            os.system("cls")
+        if menu_choice == "Merchandise Database":
+            console.clear()
             search_view = Gunpla_Table_View()
-            search_table_navigation(search_db, search_view).navigate_table()
+            search_table_navigation(
+                console=console, model=search_db, view=search_view
+            ).navigate_table()
 
-        if menu_choice == "View and update Gunpla Log":
-            os.system("cls")
+        if menu_choice == "Merchandise Log":
+            console.clear()
             log_view = Gunpla_Table_View()
-            log_table_navigation(log_db, log_view).navigate_table()
+            log_table_navigation(
+                model=log_db, view=log_view, console=console
+            ).navigate_table()
 
-        if menu_choice == "Open URL file":
-            os.system("cls")
-            use_edit_file(Console(), inquirer)
+        if menu_choice == "URLs to download":
+            console.clear()
+            use_edit_file(console, inquirer)
 
         if menu_choice == "Exit":
 
             sys.exit()
 
-        if menu_choice == "Add Gundam Kits to database":
-            os.system("cls")
+        if menu_choice == "Extract Merch info":
+            console.clear()
 
             text_urls = extract_urls_from_file()
             page_urls, non_page_urls = filter_urls(text_urls)
@@ -78,8 +83,8 @@ def menu():
                         )
                     )
 
-                add_to_search_db(
-                    extracted_urls=non_page_urls,
-                    scraper_ui=HLJ_scraper_ui(),
-                    search_db_conn=web_to_search_db(),
-                )
+            add_to_search_db(
+                extracted_urls=non_page_urls,
+                scraper_ui=HLJ_scraper_ui(),
+                search_db_conn=web_to_search_db(),
+            )
