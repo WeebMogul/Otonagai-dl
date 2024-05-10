@@ -39,25 +39,32 @@ class search_table_navigation(Navigation):
     def navigate_table(self):
         selected = 0
 
-        if inquirer.confirm(
-            "Do you want to proceed with advanced search or regular search"
-        ).execute():
-            search_result = self.model.advanced_view_table()
-        else:
-            search_result = self.model.view_table()
+        # if inquirer.confirm(
+        #     "Do you want to proceed with advanced search or regular search"
+        # ).execute():
+        #     search_result = self.model.advanced_view_table()
+        # else:
+        search_result = self.model.view_table()
 
         self.no_data_warning(search_result)
+
+        self.console.clear()
 
         with Live(
             self.view.create_gunpla_info_table(self.console, search_result, selected),
             auto_refresh=False,
+            screen=True,
         ) as live:
 
             while True:
-
+                self.console.clear_live()
                 if len(search_result) < 1:
                     break
                 ch = readkey()
+
+                selected_gunpla = self.view.create_gunpla_info_table(
+                    self.console, search_result, selected, ch
+                )
 
                 if ch == key.UP:
                     selected = max(0, selected - 1)
@@ -66,25 +73,26 @@ class search_table_navigation(Navigation):
                 if ch == key.ENTER:
                     live.stop()
 
-                    if inquirer.confirm("Do you want to add to the log ?").execute():
+                    if inquirer.confirm(
+                        f"Do you want to add {selected_gunpla[1]} to the log ?"
+                    ).execute():
+                        # live.stop()
                         self.model.insert_to_table(
-                            search_result[selected][0],
-                            search_result[selected][1],
-                            search_result[selected][2],
+                            selected_gunpla[0],
+                            selected_gunpla[1],
+                            selected_gunpla[2],
                         )
-
-                    os.system("cls")
-                    live.start(refresh=True)
-                    continue
-                    # live.refresh()
+                    os.system("cls" if os.name == "nt" else "clear")
+                    live.start(refresh="True")
 
                 if ch == key.ESC:
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():
                         break
-
-                # os.system("cls")
+                    else:
+                        os.system("cls" if os.name == "nt" else "clear")
+                        live.start(refresh=True)
 
                 live.update(
                     self.view.create_gunpla_info_table(
@@ -122,15 +130,16 @@ class log_table_navigation:
                 selected,
             ),
             auto_refresh=False,
+            screen=True,
         ) as live:
 
             while True:
-
+                self.console.clear_live()
                 if len(log_result) < 1:
                     break
                 ch = readkey()
 
-                selected_gunpla = self.view.create_gunpla_log_table(
+                selected_log = self.view.create_gunpla_log_table(
                     self.console, log_result, selected, ch
                 )
 
@@ -140,31 +149,24 @@ class log_table_navigation:
                     selected = min(len(log_result) - 1, selected + 1)
                 if ch == key.ENTER:
                     live.stop()
-                    self.model.update_table(selected_gunpla[0])
+                    self.model.update_table(selected_log[0])
 
-                    log_result = self.model.view_table()
-
-                    # live.update(Panel("Log Table"))
-                    selected_gunpla = self.view.create_gunpla_log_table(
-                        self.console, log_result, selected, ch
-                    )
-
-                    os.system("cls")
-                    live.start()
-                    live.refresh()
+                    os.system("cls" if os.name == "nt" else "clear")
+                    live.start(refresh=True)
+                    # live.refresh()
 
                 if ch == key.DELETE:
                     live.stop()
-                    self.model.delete_from_table(selected_gunpla[0])
+                    self.model.delete_from_table(selected_log[0])
 
-                    log_result = self.model.view_table()
-                    selected_gunpla = self.view.create_gunpla_log_table(
-                        self.console, log_result, selected, ch
-                    )
+                    # log_result = self.model.view_table()
+                    # selected_log = self.view.create_gunpla_log_table(
+                    #     self.console, log_result, selected, ch
+                    # )
 
-                    os.system("cls")
-                    live.start()
-                    live.refresh()
+                    os.system("cls" if os.name == "nt" else "clear")
+                    live.start(refresh=True)
+                    # live.refresh()
 
                 if ch == key.ESC:
                     if inquirer.confirm(
@@ -172,7 +174,7 @@ class log_table_navigation:
                     ).execute():
                         break
                     else:
-                        os.system("cls")
+                        os.system("cls" if os.name == "nt" else "clear")
                         live.start(refresh=True)
 
                 live.update(

@@ -68,19 +68,19 @@ def create_log_warning_panel():
     )
 
 
-def table_scroll(size, gunpla_log, select):
+def table_scroll(size, rows, select):
 
-    if len(gunpla_log) + 3 > size:
+    if len(rows) + 3 > size:
         if select < size / 2:
-            gunpla_log = gunpla_log[:size]
-        elif (select + size) / 2 > len(gunpla_log):
-            gunpla_log = gunpla_log[-size:]
-            select -= len(gunpla_log) - size
+            rows = rows[:size]
+        elif select + size / 2 > len(rows):
+            rows = rows[-size:]
+            select -= len(rows) - size
         else:
-            gunpla_log = gunpla_log[select - size // 2 : select + size // 2]
+            rows = rows[select - size // 2 : select + size // 2]
             select -= select - size // 2
 
-    return gunpla_log, select
+    return rows, select
 
 
 class Gunpla_Table_View:
@@ -102,18 +102,37 @@ class Gunpla_Table_View:
     def create_gunpla_info_table(self, console, gunpla_log, select, entered=False):
 
         self.table = Table()
-        self.table.add_column("Code", justify="center", no_wrap=True)
-        self.table.add_column("Title", no_wrap=False)
-        self.table.add_column("Series", no_wrap=False)
+        self.table.add_column(
+            "Code",
+            justify="center",
+        )
+        self.table.add_column(
+            "Title",
+        )
+        self.table.add_column(
+            "Series",
+        )
         self.table.add_column("Item Type")
         self.table.add_column("Manufacturer")
         self.table.add_column("Release Date")
 
+        gunpla_rows = gunpla_log
+
         size = console.height - 4
 
-        gunpla_log, select = table_scroll(size, gunpla_log, select)
+        if len(gunpla_rows) + 3 > size:
+            if select < size / 2:
+                gunpla_rows = gunpla_rows[:size]
+            elif select + size / 2 > len(gunpla_log):
+                gunpla_rows = gunpla_rows[-size:]
+                select -= len(gunpla_log) - size
+            else:
+                gunpla_rows = gunpla_rows[select - size // 2 : select + size // 2]
+                select -= select - size // 2
 
-        for i, col in enumerate(gunpla_log):
+        # gunpla_log, select = table_scroll(size, gunpla_log, select)
+
+        for i, col in enumerate(gunpla_rows):
             self.table.add_row(*col, style=self.selected if i == select else None)
             if i == select and entered == key.ENTER:
                 return [col[0], col[1], col[3]]
@@ -124,15 +143,31 @@ class Gunpla_Table_View:
 
         self.table = Table()
 
-        self.table.add_column("Log ID", justify="left", no_wrap=True)
-        self.table.add_column("Code", justify="center", no_wrap=True)
+        self.table.add_column(
+            "Log ID",
+            justify="left",
+        )
+        self.table.add_column(
+            "Code",
+            justify="center",
+        )
         self.table.add_column("Name", justify="center")
         self.table.add_column("Item Type", justify="center")
         self.table.add_column("Status", justify="left")
 
+        gunpla_rows = gunpla_log
+
         size = console.height - 4
 
-        gunpla_log, select = table_scroll(size, gunpla_log, select)
+        if len(gunpla_rows) + 3 > size:
+            if select < size / 2:
+                gunpla_rows = gunpla_rows[:size]
+            elif select + size / 2 > len(gunpla_log):
+                gunpla_rows = gunpla_rows[-size:]
+                select -= len(gunpla_log) - size
+            else:
+                gunpla_rows = gunpla_rows[select - size // 2 : select + size // 2]
+                select -= select - size // 2
 
         for i, col in enumerate(gunpla_log):
             if i == select and (entered == key.ENTER or entered == key.DELETE):
