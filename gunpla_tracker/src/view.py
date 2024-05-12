@@ -69,27 +69,30 @@ def create_log_warning_panel():
     )
 
 
+# Interface for the table UI
 class Table_View(ABC):
 
+    # function to enable scrolling on the table
     @abstractmethod
     def _table_scroll():
         pass
 
+    # return a markdown panel of a warning
     @abstractmethod
     def warning_panel():
         pass
 
+    # create the table UI
     @abstractmethod
     def create_table():
         pass
 
 
-class Database_Table_View(Table_View):
+class Search_Table_View(Table_View):
 
     def __init__(self, gunpla_log):
         self.table = None
         self.selected = Style(color="blue", bgcolor="white", bold=True)
-        self.warning_panel = None
         self.gunpla_log = gunpla_log
 
     def _table_scroll(self, size, rows, select):
@@ -106,8 +109,7 @@ class Database_Table_View(Table_View):
         return rows, select
 
     def warning_panel(self):
-        self.warning_panel = create_db_warning_panel()
-        return self.warning_panel
+        return create_db_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table()
@@ -141,7 +143,6 @@ class Log_Table_View(Table_View):
     def __init__(self, gunpla_log):
         self.table = None
         self.selected = Style(color="blue", bgcolor="white", bold=True)
-        # self.warning_panel = None
         self.gunpla_log = gunpla_log
 
     def _table_scroll(self, size, rows, select):
@@ -158,7 +159,6 @@ class Log_Table_View(Table_View):
         return rows, select
 
     def warning_panel(self):
-        #  self.warning_panel = create_log_warning_panel()
         return create_log_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):

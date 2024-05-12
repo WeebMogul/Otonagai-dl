@@ -12,6 +12,17 @@ from rich.panel import Panel
 console = Console()
 
 
+def basic_or_advanced_search(model):
+    if inquirer.confirm(
+        "Do you want to proceed with advanced search or regular search"
+    ).execute():
+        search_result = model.advanced_view_table()
+    search_result = model.view_table()
+
+    return search_result
+
+
+# Interface for the navigation classes for db and log
 class Navigation(ABC):
 
     @abstractmethod
@@ -31,6 +42,7 @@ class search_table_navigation(Navigation):
         self.view = view
         self.console = console
 
+    # If data is not available in database, return Markdown notif.
     def no_data_warning(self, search_result):
         if len(search_result) < 1:
             console.print(self.view.database_warning_panel())
@@ -40,15 +52,13 @@ class search_table_navigation(Navigation):
     def navigate_table(self):
         selected = 0
 
-        # if inquirer.confirm(
-        #     "Do you want to proceed with advanced search or regular search"
-        # ).execute():
-        #     search_result = self.model.advanced_view_table()
-        # else:
-        search_result = self.model.view_table()
+        # choice for advanced or full db table
+        search_result = basic_or_advanced_search(self.model)
 
+        # check if data is available in the db
         self.no_data_warning(search_result)
 
+        # clear the console
         self.console.clear()
 
         with Live(
@@ -58,11 +68,14 @@ class search_table_navigation(Navigation):
         ) as live:
 
             while True:
-                # self.console.clear_live()
+
                 if len(search_result) < 1:
                     break
+
+                # read keyboard input
                 ch = readkey()
 
+                # selected entry on the table
                 selected_gunpla = self.view.create_table(
                     self.console, search_result, selected, ch
                 )
@@ -73,7 +86,7 @@ class search_table_navigation(Navigation):
                     selected = min(len(search_result) - 1, selected + 1)
                 if ch == key.ENTER:
                     live.stop()
-                    # print(selected_gunpla)
+
                     if inquirer.confirm(
                         f"Do you want to add {selected_gunpla[1]} to the log ?"
                     ).execute():
@@ -83,6 +96,8 @@ class search_table_navigation(Navigation):
                             selected_gunpla[1],
                             selected_gunpla[2],
                         )
+
+                    # stop and then restart the function
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh="True")
 
@@ -94,7 +109,7 @@ class search_table_navigation(Navigation):
                     else:
                         os.system("cls" if os.name == "nt" else "clear")
                         live.start(refresh=True)
-                # console.clear()
+
                 live.update(
                     self.view.create_table(
                         self.console,
@@ -136,7 +151,7 @@ class log_table_navigation:
         ) as live:
 
             while True:
-                # self.console.clear_live()
+
                 if len(log_result) < 1:
                     break
                 ch = readkey()
@@ -149,22 +164,21 @@ class log_table_navigation:
                     selected = max(0, selected - 1)
                 elif ch == key.DOWN:
                     selected = min(len(log_result) - 1, selected + 1)
+
+                # Update the status of the product build
                 elif ch == key.ENTER:
                     live.stop()
                     self.model.update_table(selected_log[0])
 
-                    # log_result = self.model.view_table()
-                    # selected_log = self.view.create_table(
-                    #     self.console, log_result, selected, ch
-                    # )
-
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
 
+                # delete the product from the log
                 elif ch == key.DELETE:
                     live.stop()
                     self.model.delete_from_table(selected_log[0])
 
+                    # update the table with the new changes
                     log_result = self.model.view_table()
                     selected_log = self.view.create_table(
                         self.console, log_result, selected, ch
@@ -172,7 +186,6 @@ class log_table_navigation:
 
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
-                    live.refresh()
 
                 elif ch == key.ESC:
                     if inquirer.confirm(

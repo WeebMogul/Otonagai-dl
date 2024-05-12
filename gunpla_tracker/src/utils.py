@@ -18,6 +18,7 @@ DATA_FOLDER_PATH = rf".\Data"
 console = Console()
 
 
+# Create Data folder to store db file
 def create_data_contents():
 
     if not os.path.exists(DATA_FOLDER_PATH):
@@ -26,6 +27,7 @@ def create_data_contents():
             f.write("")
 
 
+# extract the urls from the text file
 def extract_urls_from_file():
     text_file_urls = []
     with open(URL_FILE_PATH, "rb") as f:
@@ -35,6 +37,7 @@ def extract_urls_from_file():
     return text_file_urls
 
 
+# check if the start page number is bigger than the end page
 def start_bigger_than_end(func):
     def wrapper_function(start_page, end_page):
         try:
@@ -55,6 +58,7 @@ def add_page_nos(start_page, end_page):
     return start_page, end_page
 
 
+# create a UI interface to add the URLs
 def use_edit_file(console, inquirer):
 
     console.clear()
@@ -75,6 +79,7 @@ def use_edit_file(console, inquirer):
         f.write(result.encode())
 
 
+# only retrieve the urls that are from HobbylinkJapan
 def filter_urls(urls):
 
     # remove any links not related to hobby link japan
@@ -87,6 +92,7 @@ def filter_urls(urls):
     return page_urls, non_page_urls
 
 
+# start extracting the product URLs from the pages
 def extract_from_page_links(page_urls, start_page, end_page):
 
     extracted_urls = []
@@ -97,6 +103,7 @@ def extract_from_page_links(page_urls, start_page, end_page):
     return extracted_urls
 
 
+# scrape and add the product info to the search database
 def add_to_search_db(extracted_urls, scraper_ui, search_db_conn):
     batcher = HLJ_product_scraper(
         extracted_urls, scraper_ui=scraper_ui, web_to_search_db=search_db_conn
