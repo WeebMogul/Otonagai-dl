@@ -5,7 +5,7 @@ import os
 from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
 from .model import gunpla_log_db, gunpla_search_db, web_to_search_db
-from .view import Gunpla_Table_View
+from .view import Database_Table_View, Log_Table_View
 from .utils import (
     create_data_contents,
     use_edit_file,
@@ -43,14 +43,14 @@ def menu():
 
         if menu_choice == "Merchandise Database":
             console.clear()
-            search_view = Gunpla_Table_View()
+            search_view = Database_Table_View(search_db.view_table())
             search_table_navigation(
                 console=console, model=search_db, view=search_view
             ).navigate_table()
 
         if menu_choice == "Merchandise Log":
             console.clear()
-            log_view = Gunpla_Table_View()
+            log_view = Log_Table_View(log_db.view_table())
             log_table_navigation(
                 model=log_db, view=log_view, console=console
             ).navigate_table()

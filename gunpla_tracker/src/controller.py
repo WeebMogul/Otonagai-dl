@@ -51,28 +51,28 @@ class search_table_navigation(Navigation):
         self.console.clear()
 
         with Live(
-            self.view.create_gunpla_info_table(self.console, search_result, selected),
+            self.view.create_table(self.console, search_result, selected),
             auto_refresh=False,
             screen=True,
         ) as live:
 
             while True:
-                self.console.clear_live()
+                # self.console.clear_live()
                 if len(search_result) < 1:
                     break
                 ch = readkey()
 
-                selected_gunpla = self.view.create_gunpla_info_table(
+                selected_gunpla = self.view.create_table(
                     self.console, search_result, selected, ch
                 )
 
                 if ch == key.UP:
                     selected = max(0, selected - 1)
-                if ch == key.DOWN:
+                elif ch == key.DOWN:
                     selected = min(len(search_result) - 1, selected + 1)
                 if ch == key.ENTER:
                     live.stop()
-
+                    # print(selected_gunpla)
                     if inquirer.confirm(
                         f"Do you want to add {selected_gunpla[1]} to the log ?"
                     ).execute():
@@ -85,7 +85,7 @@ class search_table_navigation(Navigation):
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh="True")
 
-                if ch == key.ESC:
+                elif ch == key.ESC:
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():
@@ -93,10 +93,12 @@ class search_table_navigation(Navigation):
                     else:
                         os.system("cls" if os.name == "nt" else "clear")
                         live.start(refresh=True)
-
+                # console.clear()
                 live.update(
-                    self.view.create_gunpla_info_table(
-                        self.console, search_result, selected
+                    self.view.create_table(
+                        self.console,
+                        self.model.view_table(),
+                        selected,
                     ),
                     refresh=True,
                 )
@@ -124,22 +126,21 @@ class log_table_navigation:
 
         self.console.clear()
         with Live(
-            self.view.create_gunpla_log_table(
+            self.view.create_table(
                 self.console,
                 log_result,
                 selected,
             ),
             auto_refresh=False,
-            screen=True,
         ) as live:
 
             while True:
-                self.console.clear_live()
+                # self.console.clear_live()
                 if len(log_result) < 1:
                     break
                 ch = readkey()
 
-                selected_log = self.view.create_gunpla_log_table(
+                selected_log = self.view.create_table(
                     self.console, log_result, selected, ch
                 )
 
@@ -151,16 +152,20 @@ class log_table_navigation:
                     live.stop()
                     self.model.update_table(selected_log[0])
 
+                    # log_result = self.model.view_table()
+                    # selected_log = self.view.create_table(
+                    #     self.console, log_result, selected, ch
+                    # )
+
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
-                    # live.refresh()
 
                 if ch == key.DELETE:
                     live.stop()
                     self.model.delete_from_table(selected_log[0])
 
                     # log_result = self.model.view_table()
-                    # selected_log = self.view.create_gunpla_log_table(
+                    # selected_log = self.view.create_table(
                     #     self.console, log_result, selected, ch
                     # )
 
@@ -178,8 +183,8 @@ class log_table_navigation:
                         live.start(refresh=True)
 
                 live.update(
-                    self.view.create_gunpla_log_table(
-                        self.console, log_result, selected
+                    self.view.create_table(
+                        self.console, self.model.view_table(), selected
                     ),
                     refresh=True,
                 )

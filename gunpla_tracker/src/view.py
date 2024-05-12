@@ -5,6 +5,7 @@ from readchar import key
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
+from abc import ABC, abstractmethod
 
 
 def no_downloads():
@@ -68,39 +69,47 @@ def create_log_warning_panel():
     )
 
 
-def table_scroll(size, rows, select):
+class Table_View(ABC):
 
-    if len(rows) + 3 > size:
-        if select < size / 2:
-            rows = rows[:size]
-        elif select + size / 2 > len(rows):
-            rows = rows[-size:]
-            select -= len(rows) - size
-        else:
-            rows = rows[select - size // 2 : select + size // 2]
-            select -= select - size // 2
+    @abstractmethod
+    def _table_scroll():
+        pass
 
-    return rows, select
+    @abstractmethod
+    def warning_panel():
+        pass
+
+    @abstractmethod
+    def create_table():
+        pass
 
 
-class Gunpla_Table_View:
+class Database_Table_View(Table_View):
 
-    def __init__(self):
+    def __init__(self, gunpla_log):
         self.table = None
         self.selected = Style(color="blue", bgcolor="white", bold=True)
         self.warning_panel = None
+        self.gunpla_log = gunpla_log
 
-    def database_warning_panel(self):
+    def _table_scroll(self, size, rows, select):
+        if len(rows) + 3 > size:
+            if select < size / 2:
+                rows = rows[:size]
+            elif select + size / 2 > len(self.gunpla_log):
+                rows = rows[-size:]
+                select -= len(self.gunpla_log) - size
+            else:
+                rows = rows[select - size // 2 : select + size // 2]
+                select -= select - size // 2
 
+        return rows, select
+
+    def warning_panel(self):
         self.warning_panel = create_db_warning_panel()
         return self.warning_panel
 
-    def log_warning_panel(self):
-        self.warning_panel = create_log_warning_panel()
-        return self.warning_panel
-
-    def create_gunpla_info_table(self, console, gunpla_log, select, entered=False):
-
+    def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table()
         self.table.add_column(
             "Code",
@@ -116,31 +125,43 @@ class Gunpla_Table_View:
         self.table.add_column("Manufacturer")
         self.table.add_column("Release Date")
 
-        gunpla_rows = gunpla_log
-
         size = console.height - 4
+        rows, select = self._table_scroll(size, gunpla_log, select)
 
-        if len(gunpla_rows) + 3 > size:
-            if select < size / 2:
-                gunpla_rows = gunpla_rows[:size]
-            elif select + size / 2 > len(gunpla_log):
-                gunpla_rows = gunpla_rows[-size:]
-                select -= len(gunpla_log) - size
-            else:
-                gunpla_rows = gunpla_rows[select - size // 2 : select + size // 2]
-                select -= select - size // 2
-
-        # gunpla_log, select = table_scroll(size, gunpla_log, select)
-
-        for i, col in enumerate(gunpla_rows):
+        for i, col in enumerate(rows):
             self.table.add_row(*col, style=self.selected if i == select else None)
             if i == select and entered == key.ENTER:
                 return [col[0], col[1], col[3]]
 
         return self.table
 
-    def create_gunpla_log_table(self, console, gunpla_log, select, entered=False):
 
+class Log_Table_View(Table_View):
+
+    def __init__(self, gunpla_log):
+        self.table = None
+        self.selected = Style(color="blue", bgcolor="white", bold=True)
+        self.warning_panel = None
+        self.gunpla_log = gunpla_log
+
+    def _table_scroll(self, size, rows, select):
+        if len(rows) + 3 > size:
+            if select < size / 2:
+                rows = rows[:size]
+            elif select + size / 2 > len(self.gunpla_log):
+                rows = rows[-size:]
+                select -= len(self.gunpla_log) - size
+            else:
+                rows = rows[select - size // 2 : select + size // 2]
+                select -= select - size // 2
+
+        return rows, select
+
+    def warning_panel(self):
+        self.warning_panel = create_log_warning_panel()
+        return self.warning_panel
+
+    def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table()
 
         self.table.add_column(
@@ -155,21 +176,10 @@ class Gunpla_Table_View:
         self.table.add_column("Item Type", justify="center")
         self.table.add_column("Status", justify="left")
 
-        gunpla_rows = gunpla_log
-
         size = console.height - 4
+        rows, select = self._table_scroll(size, gunpla_log, select)
 
-        if len(gunpla_rows) + 3 > size:
-            if select < size / 2:
-                gunpla_rows = gunpla_rows[:size]
-            elif select + size / 2 > len(gunpla_log):
-                gunpla_rows = gunpla_rows[-size:]
-                select -= len(gunpla_log) - size
-            else:
-                gunpla_rows = gunpla_rows[select - size // 2 : select + size // 2]
-                select -= select - size // 2
-
-        for i, col in enumerate(gunpla_log):
+        for i, col in enumerate(rows):
             if i == select and (entered == key.ENTER or entered == key.DELETE):
                 self.table.add_row(
                     str(col[0]), col[1], col[2], col[3], col[4], style=self.selected
