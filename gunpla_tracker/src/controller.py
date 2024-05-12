@@ -13,11 +13,15 @@ console = Console()
 
 
 def basic_or_advanced_search(model):
-    if inquirer.confirm(
-        "Do you want to proceed with advanced search or regular search"
-    ).execute():
-        search_result = model.advanced_view_table()
-    search_result = model.view_table()
+
+    if len(model.view_table()) > 1:
+        if inquirer.confirm(
+            "Do you want to proceed with advanced search or regular search"
+        ).execute():
+            search_result = model.advanced_view_table()
+        search_result = model.view_table()
+    else:
+        search_result = []
 
     return search_result
 
@@ -45,13 +49,12 @@ class search_table_navigation(Navigation):
     # If data is not available in database, return Markdown notif.
     def no_data_warning(self, search_result):
         if len(search_result) < 1:
-            console.print(self.view.database_warning_panel())
+            self.console.print(self.view.warning_panel())
             time.sleep(5)
             return None
 
     def navigate_table(self):
         selected = 0
-
         # choice for advanced or full db table
         search_result = basic_or_advanced_search(self.model)
 
