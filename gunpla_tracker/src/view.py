@@ -112,7 +112,7 @@ class Search_Table_View(Table_View):
         return create_db_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
-        self.table = Table()
+        self.table = Table(title="Database Table")
         self.table.add_column(
             "Code",
             justify="center",
@@ -162,7 +162,7 @@ class Log_Table_View(Table_View):
         return create_log_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
-        self.table = Table()
+        self.table = Table(title="Log Table")
 
         self.table.add_column(
             "Log ID",

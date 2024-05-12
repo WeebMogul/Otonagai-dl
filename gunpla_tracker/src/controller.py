@@ -194,6 +194,7 @@ class log_table_navigation:
                     selected_log = self.view.create_table(
                         self.console, log_result, selected, ch
                     )
+                    selected = 0
 
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
@@ -209,7 +210,9 @@ class log_table_navigation:
 
                 live.update(
                     self.view.create_table(
-                        self.console, self.model.view_table(), selected
+                        self.console,
+                        self.model.view_table(),
+                        selected,
                     ),
                     refresh=True,
                 )
