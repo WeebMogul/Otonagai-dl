@@ -5,6 +5,7 @@ from readchar import readkey, key
 from InquirerPy import inquirer
 from rich.live import Live
 import time
+import logging
 import os
 from rich.panel import Panel
 
@@ -114,7 +115,7 @@ class log_table_navigation:
 
     def no_data_warning(self, log_result):
         if len(log_result) < 1:
-            self.console.print(self.view.log_warning_panel())
+            self.console.print(self.view.warning_panel())
             time.sleep(5)
             return None
 
@@ -146,9 +147,9 @@ class log_table_navigation:
 
                 if ch == key.UP:
                     selected = max(0, selected - 1)
-                if ch == key.DOWN:
+                elif ch == key.DOWN:
                     selected = min(len(log_result) - 1, selected + 1)
-                if ch == key.ENTER:
+                elif ch == key.ENTER:
                     live.stop()
                     self.model.update_table(selected_log[0])
 
@@ -160,20 +161,20 @@ class log_table_navigation:
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
 
-                if ch == key.DELETE:
+                elif ch == key.DELETE:
                     live.stop()
                     self.model.delete_from_table(selected_log[0])
 
-                    # log_result = self.model.view_table()
-                    # selected_log = self.view.create_table(
-                    #     self.console, log_result, selected, ch
-                    # )
+                    log_result = self.model.view_table()
+                    selected_log = self.view.create_table(
+                        self.console, log_result, selected, ch
+                    )
 
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
-                    # live.refresh()
+                    live.refresh()
 
-                if ch == key.ESC:
+                elif ch == key.ESC:
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():

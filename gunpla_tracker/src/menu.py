@@ -48,22 +48,22 @@ def menu():
                 console=console, model=search_db, view=search_view
             ).navigate_table()
 
-        if menu_choice == "Merchandise Log":
+        elif menu_choice == "Merchandise Log":
             console.clear()
             log_view = Log_Table_View(log_db.view_table())
             log_table_navigation(
                 model=log_db, view=log_view, console=console
             ).navigate_table()
 
-        if menu_choice == "URLs to download":
+        elif menu_choice == "URLs to download":
             console.clear()
             use_edit_file(console, inquirer)
 
-        if menu_choice == "Exit":
+        elif menu_choice == "Exit":
 
             sys.exit()
 
-        if menu_choice == "Extract Merch info":
+        elif menu_choice == "Extract Merch info":
             console.clear()
 
             text_urls = extract_urls_from_file()
