@@ -14,16 +14,20 @@ console = Console()
 
 def basic_or_advanced_search(model):
 
+    search_flag = None
     if len(model.view_table()) > 1:
         if inquirer.confirm(
             "Do you want to proceed with advanced search or regular search"
         ).execute():
             search_result = model.advanced_view_table()
-        search_result = model.view_table()
+            search_flag = "Advanced"
+        else:
+            search_result = model.view_table()
+            search_flag = "Basic"
     else:
         search_result = []
 
-    return search_result
+    return search_result, search_flag
 
 
 # Interface for the navigation classes for db and log
@@ -56,10 +60,11 @@ class search_table_navigation(Navigation):
     def navigate_table(self):
         selected = 0
         # choice for advanced or full db table
-        search_result = basic_or_advanced_search(self.model)
+        search_result, flag = basic_or_advanced_search(self.model)
 
         # check if data is available in the db
-        self.no_data_warning(search_result)
+        if flag is None:
+            self.no_data_warning(search_result)
 
         # clear the console
         self.console.clear()
@@ -101,8 +106,11 @@ class search_table_navigation(Navigation):
                         )
 
                     # stop and then restart the function
-                    os.system("cls" if os.name == "nt" else "clear")
-                    live.start(refresh="True")
+                    if flag == "Basic":
+                        os.system("cls" if os.name == "nt" else "clear")
+                        live.start(refresh="True")
+                    else:
+                        break
 
                 elif ch == key.ESC:
                     if inquirer.confirm(
