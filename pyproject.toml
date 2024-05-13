@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "gunpla-tracker"
+name = "otonagai"
 version = "0.1.0"
-description = "A basic CLI tool to keep track of gunpla builds"
+description = "A basic CLI tool to keep track of your favourite anime/manga/comics/pop culture merchandise"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.9"
 rich = "^13.7.1"
 beautifulsoup4 = "^4.12.3"
 inquirerpy = "^0.3.4"
@@ -15,7 +15,7 @@ asyncio = "^3.4.3"
 requests = "^2.31.0"
 
 [tool.poetry.scripts]
-gunpla-tracker = "gunpla_tracker.main:main"
+otonagai = "otonagai.main:main"
 
 [build-system]
 requires = ["poetry-core"]

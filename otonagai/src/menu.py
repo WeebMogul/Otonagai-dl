@@ -34,11 +34,11 @@ def menu():
 
         console.clear()
         menu_choice = inquirer.select(
-            message="Welcome to the Gunpla Tracker. \nPlease select any option to proceed",
+            message="Welcome to Otonagai. \n\n Please select any option to proceed",
             choices=[
-                "Extract Merch info",
                 "Merchandise Database",
                 "Merchandise Log",
+                "Extract Merch info",
                 "URLs to download",
                 "Exit",
             ],
