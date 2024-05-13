@@ -55,3 +55,5 @@ Exit : We already know what this does.
    2. Basic search shows the entire table of products.
 2. Once you have decided on your merch, press "Enter". You are now given the option to add it to the tracking log.
 3. If yes, then you can choose it's current build status. Once confirmed, it's then added to the log.
+4. You can change the status of your chosen merch at any time by pressing "Enter" and choosing other options for your build.
+5. Press Delete and confirm to remove the product from your log.
