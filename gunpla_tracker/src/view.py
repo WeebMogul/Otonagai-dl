@@ -113,21 +113,14 @@ class Search_Table_View(Table_View):
 
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table(title="Database Table")
-        self.table.add_column(
-            "Code",
-            justify="center",
-        )
-        self.table.add_column(
-            "Title",
-        )
-        self.table.add_column(
-            "Series",
-        )
-        self.table.add_column("Item Type")
-        self.table.add_column("Manufacturer")
-        self.table.add_column("Release Date")
+        self.table.add_column("Code", justify="center", style="cyan")
+        self.table.add_column("Title", style="cyan")
+        self.table.add_column("Series", style="cyan")
+        self.table.add_column("Item Type", style="cyan")
+        self.table.add_column("Manufacturer", style="cyan")
+        self.table.add_column("Release Date", style="cyan")
 
-        size = console.height - 4
+        size = console.height - 6
         rows, select = self._table_scroll(size, gunpla_log, select)
 
         for i, col in enumerate(rows):
@@ -146,7 +139,7 @@ class Log_Table_View(Table_View):
         self.gunpla_log = gunpla_log
 
     def _table_scroll(self, size, rows, select):
-        if len(rows) + 3 > size:
+        if len(rows) + 6 > size:
             if select < size / 2:
                 rows = rows[:size]
             elif select + size / 2 > len(self.gunpla_log):
@@ -164,19 +157,13 @@ class Log_Table_View(Table_View):
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table(title="Log Table")
 
-        self.table.add_column(
-            "Log ID",
-            justify="left",
-        )
-        self.table.add_column(
-            "Code",
-            justify="center",
-        )
-        self.table.add_column("Name", justify="center")
-        self.table.add_column("Item Type", justify="center")
-        self.table.add_column("Status", justify="left")
+        self.table.add_column("Log ID", justify="left", style="cyan")
+        self.table.add_column("Code", justify="center", style="cyan")
+        self.table.add_column("Name", justify="center", style="cyan")
+        self.table.add_column("Item Type", justify="center", style="cyan")
+        self.table.add_column("Status", justify="left", style="cyan")
 
-        size = console.height - 4
+        size = console.height - 6
         rows, select = self._table_scroll(size, gunpla_log, select)
 
         for i, col in enumerate(rows):

@@ -124,7 +124,7 @@ class search_table_navigation(Navigation):
                 live.update(
                     self.view.create_table(
                         self.console,
-                        self.model.view_table(),
+                        search_result,
                         selected,
                     ),
                     refresh=True,
