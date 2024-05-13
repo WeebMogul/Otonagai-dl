@@ -75,10 +75,10 @@ class search_table_navigation(Navigation):
             screen=True,
         ) as live:
 
-            while True:
+            while len(search_result) >= 1:
 
-                if len(search_result) < 1:
-                    break
+                # if len(search_result) < 1:
+                #     break
 
                 # read keyboard input
                 ch = readkey()
@@ -109,7 +109,7 @@ class search_table_navigation(Navigation):
                     if flag == "Basic":
                         os.system("cls" if os.name == "nt" else "clear")
                         live.start(refresh="True")
-                    else:
+                    elif flag == "Advanced":
                         break
 
                 elif ch == key.ESC:
@@ -117,9 +117,9 @@ class search_table_navigation(Navigation):
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():
                         break
-                    else:
-                        os.system("cls" if os.name == "nt" else "clear")
-                        live.start(refresh=True)
+
+                    os.system("cls" if os.name == "nt" else "clear")
+                    live.start(refresh=True)
 
                 live.update(
                     self.view.create_table(
@@ -159,12 +159,11 @@ class log_table_navigation:
                 selected,
             ),
             auto_refresh=False,
+            screen=True,
         ) as live:
 
-            while True:
+            while len(log_result) >= 1:
 
-                if len(log_result) < 1:
-                    break
                 ch = readkey()
 
                 selected_log = self.view.create_table(
@@ -179,7 +178,7 @@ class log_table_navigation:
                 # Update the status of the product build
                 elif ch == key.ENTER:
                     live.stop()
-                    self.model.update_table(selected_log[0])
+                    self.model.update_table(selected_log[0], selected_log[2])
 
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
@@ -187,7 +186,7 @@ class log_table_navigation:
                 # delete the product from the log
                 elif ch == key.DELETE:
                     live.stop()
-                    self.model.delete_from_table(selected_log[0])
+                    self.model.delete_from_table(selected_log[0], selected_log[2])
 
                     # update the table with the new changes
                     log_result = self.model.view_table()
@@ -200,13 +199,13 @@ class log_table_navigation:
                     live.start(refresh=True)
 
                 elif ch == key.ESC:
+                    live.stop()
                     if inquirer.confirm(
-                        "\n\n Do you want to go back to the main menu ?"
+                        "Do you want to go back to the main menu ?"
                     ).execute():
                         break
-                    else:
-                        os.system("cls" if os.name == "nt" else "clear")
-                        live.start(refresh=True)
+                    os.system("cls" if os.name == "nt" else "clear")
+                    live.start(refresh=True)
 
                 live.update(
                     self.view.create_table(

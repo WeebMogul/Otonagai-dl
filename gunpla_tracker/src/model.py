@@ -58,7 +58,7 @@ class web_to_search_db:
     def remove_any_duplicates(self, new_url):
 
         self.cursor.execute("select URL from gunpla")
-        existing_url = set(link[0].strip() for link in self.cursor.fetchall())
+        existing_url = {link[0].strip() for link in self.cursor.fetchall()}
         new_url = set(new_url)
 
         return list(new_url - existing_url)
@@ -193,8 +193,8 @@ class gunpla_log_db:
     def view_table(self):
         with self.connection:
             self.cursor.execute("select * from gunpla_log")
-            log_result = self.cursor.fetchall()
-            return log_result
+            # log_result = self.cursor.fetchall()
+            return self.cursor.fetchall()
 
     def change_position(self, old_position, new_position):
         with self.connection:
@@ -203,10 +203,10 @@ class gunpla_log_db:
                 (new_position, old_position),
             )
 
-    def update_table(self, log_id):
+    def update_table(self, log_id, name):
         log_state = inquirer.select(
-            "Please confirm state of task",
-            [
+            message=f'Please confirm state of task for the product : "{name}"',
+            choices=[
                 "Planning",
                 "Acquired",
                 "Building",
@@ -226,8 +226,10 @@ class gunpla_log_db:
 
         return True
 
-    def delete_from_table(self, log_id):
-        if inquirer.confirm("Do you want to delete this entry ?").execute():
+    def delete_from_table(self, log_id, name):
+        if inquirer.confirm(
+            f'Do you want to delete "{name}" from this entry ?'
+        ).execute():
             with self.connection:
                 self.cursor.execute("select count(*) from gunpla_log")
                 count = self.cursor.fetchone()[0]

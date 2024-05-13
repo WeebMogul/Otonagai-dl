@@ -167,7 +167,7 @@ class Log_Table_View(Table_View):
         rows, select = self._table_scroll(size, gunpla_log, select)
 
         for i, col in enumerate(rows):
-            if i == select and (entered == key.ENTER or entered == key.DELETE):
+            if i == select and entered in [key.ENTER, key.DELETE]:
                 self.table.add_row(
                     str(col[0]), col[1], col[2], col[3], col[4], style=self.selected
                 )
