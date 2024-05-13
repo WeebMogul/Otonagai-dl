@@ -1,6 +1,6 @@
-# Gunpla Tracker
+# Otonagai
 
-Gunpla Tracker is a CLI-based app that keeps track of your favourite merchandise from anime/video games/ manga/ comic books from HobbyLinkJapan.
+Otonagai is a CLI-based app that keeps track of your favourite merchandise from anime/video games/ manga/ comic books from HobbyLinkJapan.
 
 Originally, this was being made to keep track of build progress of gunpla (Gundam Model Kits), but I thought it would be better to expand it to action figures and other merch available.
 
