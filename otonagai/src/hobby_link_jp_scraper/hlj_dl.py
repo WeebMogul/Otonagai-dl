@@ -12,6 +12,7 @@ from .hlj_batch import extract_batch
 from rich.console import Console
 from InquirerPy import inquirer
 from multiprocessing import Pool
+from ..logging import log_msg
 
 
 def extract_text(element):
@@ -20,13 +21,6 @@ def extract_text(element):
 
 
 # get the start and end pages to scrape from
-def get_start_and_end_page(url):
-
-    print(f"\nThere is a link that contains multiple pages : {url}\n")
-    start_page = input("Please enter the starting page: ")
-    end_page = input("Please enter the ending page: ")
-
-    return int(start_page), int(end_page)
 
 
 class HLJ_product_scraper:
@@ -85,8 +79,11 @@ class HLJ_product_scraper:
 
     async def _get_product_info(self, url):
         async with self.semaphore:
-            html_response = requests.Session().get(url.strip(), headers=self.headers)
 
+            html_response = requests.Session().get(url.strip(), headers=self.headers)
+            log_msg(
+                f"Extracting product info from {url} - Status Code : {html_response.status_code}"
+            )
             # check if the url response isn't giving a 404 error
             if html_response.status_code != 404:
 
@@ -120,18 +117,17 @@ class HLJ_product_scraper:
                 # Item size and weight may not be available with some products, so return None if it happens
                 if "Item Size/Weight" not in hlj_product_info:
                     hlj_product_info["Item Size/Weight"] = None
+                log_msg(f"Extracting product info from {url}")
 
                 # update ui details
                 await self.hlj_ui.update_bar()
                 await self.hlj_ui.update_table(
                     message=(
-                        f"Finished {url.strip()}"
+                        f'Finished extracting "[green]{url.strip()}"'
                         if html_response.status_code != 404
-                        else f"Error with {url.strip()}"
+                        else f"Error with [red]{url.strip()}"
                     )
                 )
                 await self.hlj_ui.update_layout()
 
                 return hlj_product_info
-            else:
-                pass

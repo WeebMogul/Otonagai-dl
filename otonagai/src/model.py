@@ -2,11 +2,23 @@ import sqlite3
 from abc import ABC, abstractmethod
 from InquirerPy import inquirer
 import time
+import os
+from .logging import log_msg
 
 DB_PATH = "Data/gunpla.db"
+status_priority = """
+            CASE 
+            WHEN status = "Planning" THEN 1
+            WHEN status = "Acquired" THEN 2
+            WHEN status = "Building" THEN 3
+            WHEN status = "Completed" THEN 4
+            WHEN status = "On Hold" THEN 5
+            WHEN status = "Dropped" THEN 6
+            END ASC
+"""
 
 
-def collect_options(choice_dict):
+def collect_options_from_db(choice_dict):
 
     category_dict = {}
     for category in choice_dict:
@@ -57,7 +69,7 @@ class web_to_search_db:
 
     def remove_any_duplicates(self, new_url):
 
-        self.cursor.execute("select URL from gunpla")
+        self.cursor.execute("select url from gunpla")
         existing_url = {link[0].strip() for link in self.cursor.fetchall()}
         new_url = set(new_url)
 
@@ -66,10 +78,11 @@ class web_to_search_db:
     def insert_to_table(self, products):
 
         for product in products:
+            log_msg(f"Inserting info for {product['URL']}")
 
             try:
                 self.cursor.execute(
-                    "INSERT INTO gunpla (Title, URL, Code, `JAN Code`, `Release Date`, Category, Series, `Item Type`, Manufacturer, `Item Size/Weight`) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO gunpla (title, url, code, jan_code, release_date, category, series, item_type, manufacturer, item_size_and_weight) VALUES (?,?,?,?,?,?,?,?,?,?)",
                     (
                         product["Title"],
                         product["URL"],
@@ -83,10 +96,9 @@ class web_to_search_db:
                         product["Item Size/Weight"],
                     ),
                 )
+                log_msg(f"Inserting {product['Title']}")
             except sqlite3.IntegrityError:
-                print(
-                    "Products are already downloaded. Please add new ones in the url file."
-                )
+                log_msg(f'{product["URL"]} already exists in the database')
                 break
             except KeyError:
                 break
@@ -100,22 +112,22 @@ class gunpla_search_db:
         self.connection = sqlite3.connect(DB_PATH)
         self.cursor = self.connection.cursor()
         self.cursor.execute(
-            "CREATE TABLE IF NOT EXISTS gunpla (Title text, URL text, Code text not null primary key, `JAN Code` text, `Release Date` date, Category text, Series text, `Item Type` text, `Manufacturer` text, `Item Size/Weight` text)"
+            "CREATE TABLE IF NOT EXISTS gunpla (title text, URL text, code text not null primary key, jan_code text, release_date date, category text, series text, item_type text, manufacturer text, item_size_and_weight text)"
         )
 
     def advanced_view_table(self):
-        search_category = collect_options(
-            self.cursor.execute("select Category from gunpla")
+        search_category = collect_options_from_db(
+            self.cursor.execute("select category from gunpla")
         )
-        item_type_category = collect_options(
-            self.cursor.execute("select `Item Type` from gunpla")
+        item_type_category = collect_options_from_db(
+            self.cursor.execute("select item_type from gunpla")
         )
-        series_category = collect_options(
-            self.cursor.execute("select Series from gunpla")
+        series_category = collect_options_from_db(
+            self.cursor.execute("select series from gunpla")
         )
 
-        manufacturer_category = collect_options(
-            self.cursor.execute("select Manufacturer from gunpla")
+        manufacturer_category = collect_options_from_db(
+            self.cursor.execute("select manufacturer from gunpla")
         )
 
         title, category, item_type, series, manufacturer = advanced_search(
@@ -124,7 +136,7 @@ class gunpla_search_db:
 
         with self.connection:
             self.cursor.execute(
-                "SELECT Code, Title, Series, `Item Type`, Manufacturer , `Release Date` from gunpla where Title like ? and Category like ? and `Item Type` like ? and Series like ?  and Manufacturer like ? order by `Release Date` desc;",
+                "SELECT code, title, series, item_type, manufacturer , release_date from gunpla where title like ? and category like ? and item_type like ? and series like ?  and manufacturer like ? order by release_date desc;",
                 (
                     f"%{title}%",
                     f"%{category if category != 'All' else ''}%",
@@ -142,7 +154,7 @@ class gunpla_search_db:
 
         with self.connection:
             self.cursor.execute(
-                "SELECT Code, Title, Series, `Item Type`, Manufacturer , `Release Date` from gunpla order by `Release Date` desc;",
+                "SELECT code, title, series, item_type, manufacturer , release_date from gunpla order by release_date desc;",
             )
 
             self.result = self.cursor.fetchall()
@@ -161,6 +173,7 @@ class gunpla_search_db:
                 "Dropped",
             ],
         ).execute()
+        # log_msg(f"Adding {Title} to log with current status {log_state}")
 
         with self.connection:
 
@@ -169,7 +182,7 @@ class gunpla_search_db:
             log_id = count_log + 1
 
             self.cursor.execute(
-                "INSERT into gunpla_log (`Log ID`, Code, Title, `Item Type`, Series) VALUES (?,?,?,?,?)",
+                "INSERT into gunpla_log (log_id, code, title, item_type, status) VALUES (?,?,?,?,?)",
                 (
                     log_id,
                     Code,
@@ -178,7 +191,7 @@ class gunpla_search_db:
                     log_state,
                 ),
             )
-            print(f"{Title} ({Code}) has been added to the log.")
+            log_msg(f"Adding {Title} to log with current status {log_state}")
 
 
 class gunpla_log_db:
@@ -187,19 +200,19 @@ class gunpla_log_db:
         self.connection = sqlite3.connect(DB_PATH)
         self.cursor = self.connection.cursor()
         self.cursor.execute(
-            "CREATE TABLE IF NOT EXISTS gunpla_log (`Log ID` integer, Code text, Title text, `Item Type` text, `Series` text)"
+            "CREATE TABLE IF NOT EXISTS gunpla_log (log_id integer, code text, title text, item_type text, status text)"
         )
 
     def view_table(self):
         with self.connection:
-            self.cursor.execute("select * from gunpla_log")
+            self.cursor.execute(f"select * from gunpla_log order by {status_priority}")
             # log_result = self.cursor.fetchall()
             return self.cursor.fetchall()
 
     def change_position(self, old_position, new_position):
         with self.connection:
             self.cursor.execute(
-                "UPDATE gunpla_log set `Log ID` = ? where `Log ID` = ?",
+                "UPDATE gunpla_log set log_id = ? where log_id = ?",
                 (new_position, old_position),
             )
 
@@ -215,15 +228,16 @@ class gunpla_log_db:
                 "Dropped",
             ],
         ).execute()
+
         with self.connection:
             self.cursor.execute(
-                "UPDATE gunpla_log set Series = ? where `Log ID` = ?",
+                "UPDATE gunpla_log set status = ? where log_id = ?",
                 (
                     log_state,
                     log_id,
                 ),
             )
-
+        log_msg(f"Changing status for {name} to new status {log_state}")
         return True
 
     def delete_from_table(self, log_id, name):
@@ -236,11 +250,12 @@ class gunpla_log_db:
 
                 if log_id is not None:
                     self.cursor.execute(
-                        "DELETE from gunpla_log where `Log ID` = ?",
+                        "DELETE from gunpla_log where log_id = ?",
                         (log_id,),
                     )
 
                     for pos in range(log_id, count + 1):
                         self.change_position(pos, pos - 1)
+                    log_msg(f"Deleted {name} from the log")
 
         return True

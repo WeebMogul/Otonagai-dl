@@ -10,6 +10,7 @@ from rich import print
 from ..model import web_to_search_db
 from rich.console import Console
 from InquirerPy import inquirer
+from ..logging import log_msg
 
 
 async def extract_batch(page_based_url, start_page, end_page):
@@ -29,11 +30,17 @@ async def extract_batch(page_based_url, start_page, end_page):
             html_response = requests.Session().get(
                 f"{page_based_url}&Page={page}", headers=headers
             )
+            log_msg(
+                f"Extracting product info from '{page_based_url}&Page={page}' - Status Code : {html_response.status_code}"
+            )
             soup = BeautifulSoup(html_response.text, "html.parser")
 
             products = soup.find_all("a", class_="item-img-wrapper", href=True)
             for products in products:
                 batch_url.append(f'https://www.hlj.com{products["href"]}'.strip())
+            #     log_msg(
+            #     f"Collected 'https://www.hlj.com{products["href"]}'".strip()
+            # )
 
     # self.url_batch.extend(batch_url)
     return batch_url

@@ -15,7 +15,7 @@ console = Console()
 def basic_or_advanced_search(model):
 
     search_flag = None
-    if len(model.view_table()) > 1:
+    if len(model.view_table()) >= 1:
         if inquirer.confirm(
             "Do you want to proceed with advanced search or regular search"
         ).execute():

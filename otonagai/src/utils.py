@@ -9,6 +9,7 @@ from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
 import logging
 import asyncio
+from .logging import log_msg
 from functools import wraps
 
 # logging.basicConfig(level=logging.INFO)
@@ -110,6 +111,7 @@ def add_to_search_db(extracted_urls, scraper_ui, search_db_conn):
     )
     batch_result = asyncio.run(batcher.start_process())
     if len(batch_result) < 1:
+        log_msg("No new downloads found")
         console.print(no_downloads())
         time.sleep(5)
     else:

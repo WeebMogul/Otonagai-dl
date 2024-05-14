@@ -17,7 +17,7 @@ from .utils import (
 )
 import os
 from rich.console import Console
-import time
+from .logging import log_msg
 
 
 def menu():
@@ -42,9 +42,13 @@ def menu():
                 "URLs to download",
                 "Exit",
             ],
+            vi_mode=True,
         ).execute()
 
+        log_msg(f"Selected {menu_choice}")
+
         if menu_choice == "Merchandise Database":
+
             console.clear()
 
             # Open up the search database
@@ -54,6 +58,7 @@ def menu():
             ).navigate_table()
 
         elif menu_choice == "Merchandise Log":
+
             console.clear()
 
             # Open up the log database
@@ -89,7 +94,9 @@ def menu():
 
                 # Extract the product urls from each page
                 start_page, end_page = add_page_nos(start_page, end_page)
-
+                log_msg(
+                    f"{url} starting with page {start_page} and ending with {end_page}"
+                )
                 if start_page is not None and end_page is not None:
                     non_page_urls.extend(
                         extract_from_page_links(

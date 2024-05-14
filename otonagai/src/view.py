@@ -8,6 +8,19 @@ from rich.markdown import Markdown
 from abc import ABC, abstractmethod
 
 
+def color_by_status(category):
+    color_map = {
+        "Planning": "#ffffff",
+        "Acquired": "#e7b416",
+        "Building": "#baffb9",
+        "Completed": "#2dc937",
+        "On Hold": "#db7b2b",
+        "Dropped": "#cc3232",
+    }
+
+    return color_map.get(category, "white")
+
+
 def no_downloads():
 
     return Panel(
@@ -113,12 +126,25 @@ class Search_Table_View(Table_View):
 
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table(title="Database Table")
-        self.table.add_column("Code", justify="center", style="cyan")
-        self.table.add_column("Title", style="cyan")
-        self.table.add_column("Series", style="cyan")
-        self.table.add_column("Item Type", style="cyan")
-        self.table.add_column("Manufacturer", style="cyan")
-        self.table.add_column("Release Date", style="cyan")
+        self.table.add_column(
+            "Code",
+            justify="center",
+        )
+        self.table.add_column(
+            "Title",
+        )
+        self.table.add_column(
+            "Series",
+        )
+        self.table.add_column(
+            "Item Type",
+        )
+        self.table.add_column(
+            "Manufacturer",
+        )
+        self.table.add_column(
+            "Release Date",
+        )
 
         size = console.height - 6
         rows, select = self._table_scroll(size, gunpla_log, select)
@@ -135,7 +161,7 @@ class Log_Table_View(Table_View):
 
     def __init__(self, gunpla_log):
         self.table = None
-        self.selected = Style(color="blue", bgcolor="white", bold=True)
+        self.selected = Style(bgcolor="white", bold=True, color="black")
         self.gunpla_log = gunpla_log
 
     def _table_scroll(self, size, rows, select):
@@ -157,26 +183,40 @@ class Log_Table_View(Table_View):
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table(title="Log Table")
 
-        self.table.add_column("Log ID", justify="left", style="cyan")
-        self.table.add_column("Code", justify="center", style="cyan")
-        self.table.add_column("Name", justify="center", style="cyan")
-        self.table.add_column("Item Type", justify="center", style="cyan")
-        self.table.add_column("Status", justify="left", style="cyan")
+        # self.table.add_column("Log ID", justify="left", style="cyan")
+        self.table.add_column(
+            "Code",
+            justify="center",
+        )
+        self.table.add_column(
+            "Name",
+            justify="center",
+        )
+        self.table.add_column(
+            "Item Type",
+            justify="center",
+        )
+        self.table.add_column(
+            "Status",
+            justify="left",
+        )
 
         size = console.height - 6
         rows, select = self._table_scroll(size, gunpla_log, select)
 
         for i, col in enumerate(rows):
+            color = color_by_status(col[4])
             if i == select and entered in [key.ENTER, key.DELETE]:
-                self.table.add_row(
-                    str(col[0]), col[1], col[2], col[3], col[4], style=self.selected
-                )
+                self.table.add_row(col[1], col[2], col[3], col[4], style=self.selected)
                 return [col[0], col[1], col[2], col[3], col[4]]
             elif i == select:
-                self.table.add_row(
-                    str(col[0]), col[1], col[2], col[3], col[4], style=self.selected
-                )
+                self.table.add_row(col[1], col[2], col[3], col[4], style=self.selected)
             else:
-                self.table.add_row(str(col[0]), col[1], col[2], col[3], col[4])
+                self.table.add_row(
+                    f"[{color}]{col[1]}[/{color}]",
+                    f"[{color}]{col[2]}[/{color}]",
+                    f"[{color}]{col[3]}[/{color}]",
+                    f"[{color}]{col[4]}[/{color}]",
+                )
 
         return self.table
