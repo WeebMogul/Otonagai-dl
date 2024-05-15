@@ -113,6 +113,7 @@ class search_table_navigation(Navigation):
                         break
 
                 elif ch == key.ESC:
+                    live.stop()
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
                     ).execute():

@@ -30,26 +30,32 @@ def collect_options_from_db(choice_dict):
 
 
 def advanced_search(categories, item_types, series, manufacturer):
-    search_title = inquirer.text("Which product you want to search ?").execute()
+    search_title = inquirer.text(
+        "Which product you want to search ?", mandatory=True
+    ).execute()
 
     search_category = inquirer.text(
-        message="Which category ?",
+        message="Which category ? (Press Shift to open options)",
         completer=categories,
+        mandatory=True,
     ).execute()
 
     search_item_type = inquirer.text(
-        message="Which item type ?",
+        message="Which item type ? (Press Shift to open options)",
         completer=item_types,
+        mandatory=True,
     ).execute()
 
     search_series = inquirer.text(
-        message="From which series ?",
+        message="From which series ? (Press Shift to open options)",
         completer=series,
+        mandatory=True,
     ).execute()
 
     search_manufacturer = inquirer.text(
-        message="From which manufacturer ?",
+        message="From which manufacturer ? (Press Shift to open options)",
         completer=manufacturer,
+        mandatory=True,
     ).execute()
 
     return (

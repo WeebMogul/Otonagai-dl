@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "otonagai"
+name = "otonagai-dl"
 version = "0.1.0"
 description = "A basic CLI tool to keep track of your favourite anime/manga/comics/pop culture merchandise"
-authors = ["Your Name <you@example.com>"]
+authors = ["Clavin Dsouza <clavind12@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,7 +15,7 @@ asyncio = "^3.4.3"
 requests = "^2.31.0"
 
 [tool.poetry.scripts]
-otonagai = "otonagai.main:main"
+otonagai-dl = "otonagai_dl.main:main"
 
 [build-system]
 requires = ["poetry-core"]

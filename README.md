@@ -1,4 +1,4 @@
-# Otonagai
+# Otonagai-dl
 
 Otonagai is a CLI-based app that keeps track of your favourite merchandise from anime/video games/ manga/ comic books from HobbyLinkJapan.
 
