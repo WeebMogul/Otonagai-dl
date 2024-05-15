@@ -61,18 +61,18 @@ def use_edit_file(console, inquirer):
     console.print("Editing file")
 
     with open(URL_FILE_PATH, "r") as f:
-        existing_urls = f.read()
+        present_urls = f.read()
 
-    result = inquirer.text(
+    url_collection = inquirer.text(
         message="URLs:",
         multiline=True,
-        long_instruction="Press escape and then enter to finish editing.",
+        long_instruction="Press ESC + Enter to finish editing.",
         vi_mode=True,
-        default=existing_urls,
+        default=present_urls,
     ).execute()
 
     with open(URL_FILE_PATH, "wb") as f:
-        f.write(result.encode())
+        f.write(url_collection.encode())
 
 
 # only retrieve the urls that are from HobbylinkJapan

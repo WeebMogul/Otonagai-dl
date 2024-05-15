@@ -14,14 +14,15 @@ def basic_or_advanced_search(model):
 
     search_flag = None
     if len(model.view_table()) >= 1:
-        if inquirer.confirm(
-            "Do you want to proceed with advanced search or regular search"
-        ).execute():
+        search_flag = inquirer.select(
+            "Do you want to proceed with advanced search or regular search",
+            choices=["Advanced", "Basic"],
+        ).execute()
+
+        if search_flag == "Advanced":
             search_result = model.advanced_view_table()
-            search_flag = "Advanced"
-        else:
+        elif search_flag == "Basic":
             search_result = model.view_table()
-            search_flag = "Basic"
     else:
         search_result = []
 
