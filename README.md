@@ -15,7 +15,7 @@ pip install otonagai-dl
 After installing the package locally, go into your terminal of choice by typing
 
 ```
-gunpla-tracker
+otonagai-dl
 ```
 
 and press "Enter".
