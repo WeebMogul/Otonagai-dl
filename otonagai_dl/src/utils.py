@@ -4,13 +4,10 @@ import asyncio
 import time
 from .view import no_downloads
 from .hobby_link_jp_scraper.hlj_batch import extract_batch
-from .model import web_to_search_db
 from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
-from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
-import logging
 import asyncio
 from .logging import log_msg
-from functools import wraps
+
 
 # logging.basicConfig(level=logging.INFO)
 
@@ -21,11 +18,10 @@ console = Console()
 
 # Create Data folder to store db file
 def create_data_contents():
-
     if not os.path.exists(DATA_FOLDER_PATH):
         os.mkdir(DATA_FOLDER_PATH)
-        with open(URL_FILE_PATH, "w") as f:
-            f.write("")
+        with open(URL_FILE_PATH, "w") as f_url:
+            f_url.write("")
 
 
 # extract the urls from the text file

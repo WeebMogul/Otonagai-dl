@@ -5,9 +5,7 @@ from readchar import readkey, key
 from InquirerPy import inquirer
 from rich.live import Live
 import time
-import logging
 import os
-from rich.panel import Panel
 
 console = Console()
 

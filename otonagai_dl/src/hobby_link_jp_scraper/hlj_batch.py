@@ -1,15 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 import asyncio
-import random
-from .hlj_ui import HLJ_scraper_ui
-from rich.live import Live
-import time
-from rich import print
-from ..model import web_to_search_db
-from rich.console import Console
-from InquirerPy import inquirer
 from ..logging import log_msg
 
 

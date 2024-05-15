@@ -1,8 +1,6 @@
 from InquirerPy import inquirer
 from .controller import search_table_navigation, log_table_navigation
 import sys
-import os
-from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
 from .model import gunpla_log_db, gunpla_search_db, web_to_search_db
 from .view import Search_Table_View, Log_Table_View
@@ -15,7 +13,6 @@ from .utils import (
     extract_urls_from_file,
     add_page_nos,
 )
-import os
 from rich.console import Console
 from .logging import log_msg
 

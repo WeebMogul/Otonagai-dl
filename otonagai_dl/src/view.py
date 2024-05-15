@@ -1,8 +1,6 @@
 from rich.table import Table
 from rich.style import Style
-from datetime import datetime
 from readchar import key
-from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from abc import ABC, abstractmethod

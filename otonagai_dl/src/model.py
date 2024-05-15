@@ -1,8 +1,6 @@
 import sqlite3
-from abc import ABC, abstractmethod
 from InquirerPy import inquirer
 import time
-import os
 from .logging import log_msg
 
 DB_PATH = "Data/gunpla.db"

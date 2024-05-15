@@ -1,5 +1,4 @@
 from .src.menu import menu
-from rich.console import Console
 
 
 def main():

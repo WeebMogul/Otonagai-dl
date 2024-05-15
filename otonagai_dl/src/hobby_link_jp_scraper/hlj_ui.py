@@ -1,4 +1,3 @@
-from rich.live import Live
 from rich.table import Table
 from rich.progress import (
     Progress,
@@ -9,10 +8,7 @@ from rich.progress import (
     SpinnerColumn,
 )
 from rich.layout import Layout
-from rich import print
 from rich.panel import Panel
-import time
-import asyncio
 
 
 class HLJ_scraper_ui:
