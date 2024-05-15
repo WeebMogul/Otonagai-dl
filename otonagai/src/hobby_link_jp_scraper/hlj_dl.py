@@ -59,21 +59,21 @@ class HLJ_product_scraper:
 
         if len(unique_urls) < 1:
             return []
-        else:
-            with Live(self.loading_bar, refresh_per_second=2) as live:
 
-                scraped_products = list(
-                    map(
-                        lambda url: asyncio.create_task(self._get_product_info(url)),
-                        unique_urls,
-                    )
+        with Live(self.loading_bar, refresh_per_second=2) as live:
+
+            scraped_products = list(
+                map(
+                    lambda url: asyncio.create_task(self._get_product_info(url)),
+                    unique_urls,
                 )
+            )
 
-                for results in asyncio.as_completed(scraped_products):
+            for results in asyncio.as_completed(scraped_products):
 
-                    scraped_results.append(await results)
+                scraped_results.append(await results)
 
-                live.update(self.loading_bar)
+            live.update(self.loading_bar)
 
         return scraped_results
 
@@ -123,9 +123,9 @@ class HLJ_product_scraper:
                 await self.hlj_ui.update_bar()
                 await self.hlj_ui.update_table(
                     message=(
-                        f'Finished extracting "[green]{url.strip()}"'
+                        f'Finished extracting "[green]{url.strip()}[/green]"'
                         if html_response.status_code != 404
-                        else f"Error with [red]{url.strip()}"
+                        else f"Error with [red]{url.strip()}[/red]"
                     )
                 )
                 await self.hlj_ui.update_layout()

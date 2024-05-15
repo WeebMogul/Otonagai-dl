@@ -32,8 +32,7 @@ def create_data_contents():
 def extract_urls_from_file():
     text_file_urls = []
     with open(URL_FILE_PATH, "rb") as f:
-        for line in f.readlines():
-            text_file_urls.append(line.decode().strip())
+        text_file_urls.extend(line.decode().strip() for line in f.readlines())
 
     return text_file_urls
 

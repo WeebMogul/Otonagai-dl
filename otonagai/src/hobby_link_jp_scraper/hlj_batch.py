@@ -36,8 +36,9 @@ async def extract_batch(page_based_url, start_page, end_page):
             soup = BeautifulSoup(html_response.text, "html.parser")
 
             products = soup.find_all("a", class_="item-img-wrapper", href=True)
-            for products in products:
-                batch_url.append(f'https://www.hlj.com{products["href"]}'.strip())
+            batch_url.extend(
+                f'https://www.hlj.com{product["href"]}'.strip() for product in products
+            )
             #     log_msg(
             #     f"Collected 'https://www.hlj.com{products["href"]}'".strip()
             # )

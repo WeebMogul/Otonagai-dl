@@ -59,10 +59,11 @@ class HLJ_scraper_ui:
     async def update_bar(self):
         self.scrape_bar.update(self.download_progress_task, advance=1)
 
+    # update contents section with new rows from top to bottom if the row limit is reached
     async def update_table(self, message):
 
         self.row_count += 1
-        if self.row_count % 20 == 0:
+        if self.row_count % 24 == 0:
             self.scrape_table = Table.grid(expand=True)
 
         self.scrape_table.add_row(message)

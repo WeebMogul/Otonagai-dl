@@ -173,7 +173,6 @@ class gunpla_search_db:
                 "Dropped",
             ],
         ).execute()
-        # log_msg(f"Adding {Title} to log with current status {log_state}")
 
         with self.connection:
 
