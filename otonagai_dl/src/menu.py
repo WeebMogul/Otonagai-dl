@@ -2,10 +2,9 @@ from InquirerPy import inquirer
 from .controller import search_table_navigation, log_table_navigation
 import sys
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
-from .model import gunpla_log_db, gunpla_search_db, web_to_search_db
+from .model import gunpla_log_db, gunpla_search_db, web_to_db_bridge
 from .view import Search_Table_View, Log_Table_View
 from .utils import (
-    create_data_contents,
     use_edit_file,
     extract_from_page_links,
     filter_urls,
@@ -14,13 +13,13 @@ from .utils import (
     add_page_nos,
 )
 from rich.console import Console
-from .logging import log_msg
+from .log_system import log_msg
 
 
 def menu():
 
     # create the data folder to contain the db
-    create_data_contents()
+    # create_data_contents()
 
     # create objects for the search database and log database
     search_db = gunpla_search_db()
@@ -105,5 +104,5 @@ def menu():
             add_to_search_db(
                 extracted_urls=non_page_urls,
                 scraper_ui=HLJ_scraper_ui(),
-                search_db_conn=web_to_search_db(),
+                search_db_conn=web_to_db_bridge(),
             )

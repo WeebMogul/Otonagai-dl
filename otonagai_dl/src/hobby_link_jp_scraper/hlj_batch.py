@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import asyncio
-from ..logging import log_msg
+from ..log_system import log_msg
 
 
 async def extract_batch(page_based_url, start_page, end_page):

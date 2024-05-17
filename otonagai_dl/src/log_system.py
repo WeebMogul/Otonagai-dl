@@ -1,5 +1,8 @@
 import logging
 
+# from .utils import LOG_FILE_PATH
+
+LOG_FILE_PATH = "./otonagai_dl.log"
 
 FORMAT = (
     "%(asctime)s [%(levelname)s] [%(name)s] - %(message)s (%(filename)s:%(lineno)d)"
@@ -9,7 +12,7 @@ logging.basicConfig(
     format=FORMAT,
     datefmt="[%X]",
     handlers=[
-        logging.FileHandler("./otonagai_dl.log", mode="a"),
+        logging.FileHandler(LOG_FILE_PATH, mode="a"),
     ],
 )
 

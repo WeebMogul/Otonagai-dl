@@ -6,6 +6,7 @@ from InquirerPy import inquirer
 from rich.live import Live
 import time
 import os
+from .log_system import log_msg
 
 console = Console()
 
@@ -76,11 +77,9 @@ class search_table_navigation(Navigation):
 
             while len(search_result) >= 1:
 
-                # if len(search_result) < 1:
-                #     break
-
                 # read keyboard input
                 ch = readkey()
+                log_msg(f"Key typed : {ch}")
 
                 # selected entry on the table
                 selected_gunpla = self.view.create_table(
@@ -111,7 +110,7 @@ class search_table_navigation(Navigation):
                     elif flag == "Advanced":
                         break
 
-                elif ch == key.ESC:
+                elif ch == key.CTRL_D:
                     live.stop()
                     if inquirer.confirm(
                         "\n\n Do you want to go back to the main menu ?"
@@ -198,7 +197,7 @@ class log_table_navigation:
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
 
-                elif ch == key.ESC:
+                elif ch == key.CTRL_D:
                     live.stop()
                     if inquirer.confirm(
                         "Do you want to go back to the main menu ?"

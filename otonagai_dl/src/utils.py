@@ -6,22 +6,32 @@ from .view import no_downloads
 from .hobby_link_jp_scraper.hlj_batch import extract_batch
 from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
 import asyncio
-from .logging import log_msg
+from .log_system import log_msg
 
 
 # logging.basicConfig(level=logging.INFO)
 
-URL_FILE_PATH = rf".\Data\URLs.txt"
-DATA_FOLDER_PATH = rf".\Data"
-console = Console()
+URL_FILE_PATH = rf"./Data/URLs.txt"
+DATA_FOLDER_PATH = rf"./Data"
+LOG_FOLDER_PATH = rf"./Log"
+LOG_FILE_PATH = rf"./Log/otonagai_dl.log"
+DB_PATH = "./Data/otonagai.db"
 
 
 # Create Data folder to store db file
 def create_data_contents():
     if not os.path.exists(DATA_FOLDER_PATH):
         os.mkdir(DATA_FOLDER_PATH)
+        os.mkdir(LOG_FOLDER_PATH)
+
         with open(URL_FILE_PATH, "w") as f_url:
             f_url.write("")
+
+        with open(LOG_FILE_PATH, "w") as f_log:
+            f_log.write("")
+
+        with open(DB_PATH, "w") as f_db:
+            f_db.write("")
 
 
 # extract the urls from the text file
@@ -107,7 +117,7 @@ def add_to_search_db(extracted_urls, scraper_ui, search_db_conn):
     batch_result = asyncio.run(batcher.start_process())
     if len(batch_result) < 1:
         log_msg("No new downloads found")
-        console.print(no_downloads())
+        Console().print(no_downloads())
         time.sleep(5)
     else:
         search_db_conn.insert_to_table(batch_result)

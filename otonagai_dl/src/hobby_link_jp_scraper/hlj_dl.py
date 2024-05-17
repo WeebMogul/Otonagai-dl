@@ -4,9 +4,10 @@ import re
 import asyncio
 from .hlj_ui import HLJ_scraper_ui
 from rich.live import Live
-from ..model import web_to_search_db
+from ..log_system import log_msg
 from rich.console import Console
-from ..logging import log_msg
+
+# from ..model import web_to_db_bridge
 
 
 def extract_text(element):
@@ -23,7 +24,7 @@ class HLJ_product_scraper:
         self,
         url: list[str],
         scraper_ui: HLJ_scraper_ui,
-        web_to_search_db: web_to_search_db,
+        web_to_search_db,
     ):
         self.url_batch = url
         self.headers = {
