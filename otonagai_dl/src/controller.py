@@ -78,7 +78,7 @@ class search_table_navigation(Navigation):
             self.no_data_warning(search_result)
 
         # clear the console
-        self.console.clear()
+        os.system("cls" if os.name == "nt" else "clear")
 
         with Live(
             self.view.create_table(self.console, search_result, selected),
@@ -174,7 +174,7 @@ class log_table_navigation:
         log_result = self.model.view_table()
         self.no_data_warning(log_result)
 
-        self.console.clear()
+        os.system("cls" if os.name == "nt" else "clear")
         with Live(
             self.view.create_table(
                 self.console,

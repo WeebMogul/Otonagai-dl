@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "otonagai-dl"
-version = "1.0.4"
+version = "1.0.5"
 description = "A basic CLI tool to keep track of your favourite anime/manga/comics/pop culture merchandise"
 authors = ["Clavin Dsouza <clavind12@gmail.com>"]
 readme = "README.md"

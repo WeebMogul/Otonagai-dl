@@ -3,7 +3,7 @@ from .controller import search_table_navigation, log_table_navigation
 import sys
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
 from .model import gunpla_log_db, gunpla_search_db, web_to_db_bridge
-from .view import Search_Table_View, Log_Table_View
+from .view import Search_Table_View, Log_Table_View, no_downloads
 from .utils import (
     use_edit_file,
     extract_from_page_links,
@@ -46,7 +46,7 @@ def menu():
 
         if menu_choice == "Merchandise Database":
 
-            console.clear()
+            os.system("cls" if os.name == "nt" else "clear")
 
             # Open up the search database
             search_view = Search_Table_View(search_db.view_table())
@@ -56,7 +56,7 @@ def menu():
 
         elif menu_choice == "Merchandise Log":
 
-            console.clear()
+            os.system("cls" if os.name == "nt" else "clear")
 
             # Open up the log database
             log_view = Log_Table_View(log_db.view_table())
@@ -65,7 +65,7 @@ def menu():
             ).navigate_table()
 
         elif menu_choice == "URLs to download":
-            console.clear()
+            os.system("cls" if os.name == "nt" else "clear")
             # open the file that contains the urls
             use_edit_file(inquirer)
 
@@ -75,9 +75,10 @@ def menu():
 
         # Extract the product info from the product urls
         elif menu_choice == "Extract Merch info":
-            console.clear()
+            os.system("cls" if os.name == "nt" else "clear")
 
             text_urls = extract_urls_from_file()
+            text_urls = set(text_urls)
 
             # page_urls : URLs that consist of multiple pages
             # non_page_urls : URLs for a single product
@@ -85,22 +86,27 @@ def menu():
 
             for url in page_urls:
 
-                print(f"Please add the pages to extract the products from {url}\n")
-                start_page = input("Please enter the starting page : ")
-                end_page = input("Please enter the ending page : ")
-
-                # Extract the product urls from each page
-                start_page, end_page = add_page_nos(start_page, end_page)
-                log_msg(
-                    f"{url} starting with page {start_page} and ending with {end_page}"
-                )
-                end_page += 1
-                if start_page is not None and end_page is not None:
-                    non_page_urls.extend(
-                        extract_from_page_links(
-                            url, start_page=start_page, end_page=end_page
-                        )
+                try:
+                    print(
+                        f"\n Please add the pages to extract the products from {url}\n"
                     )
+                    start_page = int(input("Please enter the starting page : "))
+                    end_page = int(input("Please enter the ending page : "))
+
+                    # Extract the product urls from each page
+                    start_page, end_page = add_page_nos(start_page, end_page)
+                    log_msg(
+                        f"{url} starting with page {start_page} and ending with {end_page}"
+                    )
+                    end_page += 1
+                    if start_page is not None and end_page is not None:
+                        non_page_urls.extend(
+                            extract_from_page_links(
+                                url, start_page=start_page, end_page=end_page
+                            )
+                        )
+                except Exception:
+                    Console().print(no_downloads())
 
             # add all the product information to the search database
             add_to_search_db(
