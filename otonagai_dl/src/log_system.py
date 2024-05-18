@@ -1,7 +1,5 @@
 import logging
 
-# from .utils import LOG_FILE_PATH
-
 LOG_FILE_PATH = "./otonagai_dl.log"
 
 FORMAT = (

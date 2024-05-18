@@ -13,8 +13,6 @@ from .log_system import log_msg
 
 URL_FILE_PATH = rf"./Data/URLs.txt"
 DATA_FOLDER_PATH = rf"./Data"
-LOG_FOLDER_PATH = rf"./Log"
-LOG_FILE_PATH = rf"./Log/otonagai_dl.log"
 DB_PATH = "./Data/otonagai.db"
 
 
@@ -22,13 +20,9 @@ DB_PATH = "./Data/otonagai.db"
 def create_data_contents():
     if not os.path.exists(DATA_FOLDER_PATH):
         os.mkdir(DATA_FOLDER_PATH)
-        os.mkdir(LOG_FOLDER_PATH)
 
         with open(URL_FILE_PATH, "w") as f_url:
             f_url.write("")
-
-        with open(LOG_FILE_PATH, "w") as f_log:
-            f_log.write("")
 
         with open(DB_PATH, "w") as f_db:
             f_db.write("")
@@ -65,18 +59,14 @@ def add_page_nos(start_page, end_page):
 
 
 # create a UI interface to add the URLs
-def use_edit_file(console, inquirer):
-
-    console.clear()
-    console.print("Editing file")
+def use_edit_file(inquirer):
 
     with open(URL_FILE_PATH, "r") as f:
         present_urls = f.read()
 
     url_collection = inquirer.text(
-        message="URLs:",
+        message="URLs to be extracted:",
         multiline=True,
-        long_instruction="Press ESC + Enter to finish editing.",
         vi_mode=True,
         default=present_urls,
     ).execute()

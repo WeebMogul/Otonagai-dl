@@ -14,6 +14,7 @@ from .utils import (
 )
 from rich.console import Console
 from .log_system import log_msg
+import os
 
 
 def menu():
@@ -28,7 +29,7 @@ def menu():
 
     while True:
 
-        console.clear()
+        os.system("cls" if os.name == "nt" else "clear")
         menu_choice = inquirer.select(
             message="Welcome to Otonagai. \n\n Please select any option to proceed",
             choices=[
@@ -41,7 +42,7 @@ def menu():
             vi_mode=True,
         ).execute()
 
-        log_msg(f"Selected {menu_choice}")
+        log_msg(f'Selected "{menu_choice}"')
 
         if menu_choice == "Merchandise Database":
 
@@ -93,6 +94,7 @@ def menu():
                 log_msg(
                     f"{url} starting with page {start_page} and ending with {end_page}"
                 )
+                end_page += 1
                 if start_page is not None and end_page is not None:
                     non_page_urls.extend(
                         extract_from_page_links(

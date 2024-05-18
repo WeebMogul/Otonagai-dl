@@ -42,6 +42,11 @@ class Navigation(ABC):
         pass
 
 
+"""
+Lot of boilerplate code here. Will refactor it in subsequent updates, but for now, it just works.
+"""
+
+
 class search_table_navigation(Navigation):
 
     def __init__(self, model, view, console):
@@ -57,6 +62,12 @@ class search_table_navigation(Navigation):
             time.sleep(5)
             return None
 
+    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
+    # Original author: llimllib
+    # License: MIT License
+    # URL: https://github.com/Textualize/rich/discussions/1785
+
+    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
     def navigate_table(self):
         selected = 0
         # choice for advanced or full db table
@@ -78,19 +89,19 @@ class search_table_navigation(Navigation):
             while len(search_result) >= 1:
 
                 # read keyboard input
-                ch = readkey()
-                log_msg(f"Key typed : {ch}")
+                typed_key = readkey()
+                # log_msg(f"Key typed : {ch}")
 
                 # selected entry on the table
                 selected_gunpla = self.view.create_table(
-                    self.console, search_result, selected, ch
+                    self.console, search_result, selected, typed_key
                 )
 
-                if ch == key.UP:
+                if typed_key == key.UP:
                     selected = max(0, selected - 1)
-                elif ch == key.DOWN:
+                elif typed_key == key.DOWN:
                     selected = min(len(search_result) - 1, selected + 1)
-                if ch == key.ENTER:
+                if typed_key == key.ENTER:
                     live.stop()
 
                     if inquirer.confirm(
@@ -110,10 +121,10 @@ class search_table_navigation(Navigation):
                     elif flag == "Advanced":
                         break
 
-                elif ch == key.CTRL_D:
+                elif typed_key == key.CTRL_D:
                     live.stop()
                     if inquirer.confirm(
-                        "\n\n Do you want to go back to the main menu ?"
+                        "Do you want to go back to the main menu ?"
                     ).execute():
                         break
 
@@ -144,6 +155,19 @@ class log_table_navigation:
             time.sleep(5)
             return None
 
+    """
+    Sounds silly, but I'm doing this one because :
+    1. The snippet is really nice.
+    2. Gotta give credit where it's due.
+    3. Don't want to get yanked due to software licensing issues, since it's my first time doing this.
+    """
+    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
+    # Original author: llimllib
+    # License: MIT License
+    # URL: https://github.com/Textualize/rich/discussions/1785
+
+    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
+
     def navigate_table(self):
         selected = 0
 
@@ -163,19 +187,19 @@ class log_table_navigation:
 
             while len(log_result) >= 1:
 
-                ch = readkey()
+                typed_key = readkey()
 
                 selected_log = self.view.create_table(
-                    self.console, log_result, selected, ch
+                    self.console, log_result, selected, typed_key
                 )
 
-                if ch == key.UP:
+                if typed_key == key.UP:
                     selected = max(0, selected - 1)
-                elif ch == key.DOWN:
+                elif typed_key == key.DOWN:
                     selected = min(len(log_result) - 1, selected + 1)
 
                 # Update the status of the product build
-                elif ch == key.ENTER:
+                elif typed_key == key.ENTER:
                     live.stop()
                     self.model.update_table(selected_log[0], selected_log[2])
 
@@ -183,21 +207,21 @@ class log_table_navigation:
                     live.start(refresh=True)
 
                 # delete the product from the log
-                elif ch == key.DELETE:
+                elif typed_key == key.DELETE:
                     live.stop()
                     self.model.delete_from_table(selected_log[0], selected_log[2])
 
                     # update the table with the new changes
                     log_result = self.model.view_table()
                     selected_log = self.view.create_table(
-                        self.console, log_result, selected, ch
+                        self.console, log_result, selected, typed_key
                     )
                     selected = 0
 
                     os.system("cls" if os.name == "nt" else "clear")
                     live.start(refresh=True)
 
-                elif ch == key.CTRL_D:
+                elif typed_key == key.CTRL_D:
                     live.stop()
                     if inquirer.confirm(
                         "Do you want to go back to the main menu ?"

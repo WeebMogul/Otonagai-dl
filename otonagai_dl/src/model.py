@@ -216,11 +216,11 @@ class gunpla_log_db:
             # log_result = self.cursor.fetchall()
             return self.cursor.fetchall()
 
-    def change_position(self, old_position, new_position):
+    def refresh_table_positions(self, old_placement, new_placement):
         with self.connection:
             self.cursor.execute(
                 f"UPDATE {log_table_name} set log_id = ? where log_id = ?",
-                (new_position, old_position),
+                (new_placement, old_placement),
             )
 
     def update_table(self, log_id, name):
@@ -253,7 +253,7 @@ class gunpla_log_db:
         ).execute():
             with self.connection:
                 self.cursor.execute(f"select count(*) from {log_table_name}")
-                count = self.cursor.fetchone()[0]
+                total_count = self.cursor.fetchone()[0]
 
                 if log_id is not None:
                     self.cursor.execute(
@@ -261,8 +261,8 @@ class gunpla_log_db:
                         (log_id,),
                     )
 
-                    for pos in range(log_id, count + 1):
-                        self.change_position(pos, pos - 1)
+                    for log_no in range(log_id, total_count + 1):
+                        self.refresh_table_positions(log_no, log_no - 1)
                     log_msg(f"Deleted {name} from the log")
 
         return True

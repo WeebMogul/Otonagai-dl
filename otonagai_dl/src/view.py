@@ -106,6 +106,18 @@ class Search_Table_View(Table_View):
         self.selected = Style(color="blue", bgcolor="white", bold=True)
         self.gunpla_log = gunpla_log
 
+    """
+    Sounds silly, but I'm doing this one because :
+    1. The snippet is really nice.
+    2. Gotta give credit where it's due.
+    3. Don't want to get yanked due to software licensing issues
+    """
+    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
+    # Original author: llimllib
+    # License: MIT License
+    # URL: https://github.com/Textualize/rich/discussions/1785
+
+    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
     def _table_scroll(self, size, rows, select):
         if len(rows) + 3 > size:
             if select < size / 2:
@@ -161,6 +173,19 @@ class Log_Table_View(Table_View):
         self.table = None
         self.selected = Style(bgcolor="white", bold=True, color="black")
         self.gunpla_log = gunpla_log
+
+    """
+    Sounds silly, but I'm doing this one because :
+    1. The snippet is really nice.
+    2. Gotta give credit where it's due.
+    3. Don't want to get yanked due to software licensing issues, since it's my first time doing this.
+    """
+    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
+    # Original author: llimllib
+    # License: MIT License
+    # URL: https://github.com/Textualize/rich/discussions/1785
+
+    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
 
     def _table_scroll(self, size, rows, select):
         if len(rows) + 6 > size:
