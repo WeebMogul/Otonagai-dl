@@ -67,7 +67,7 @@ def menu():
         elif menu_choice == "URLs to download":
             console.clear()
             # open the file that contains the urls
-            use_edit_file(console, inquirer)
+            use_edit_file(inquirer)
 
         elif menu_choice == "Exit":
 
