@@ -10,7 +10,7 @@ Originally, this was being made to keep track of build progress of gunpla (Gunda
 
 This project is only meant for personal use and is only meant for the purpose of creating a log to keep track of merchandise.
 
-This app scrapes product information from HobbylinkJapan, respecting the robots.txt file along with the Terms and Conditions.
+This app scrapes only product information from HobbylinkJapan, respecting the robots.txt file along with the Terms and Conditions.
 
 # Installation
 
