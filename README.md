@@ -20,7 +20,7 @@ You can install the app through pip in Python by using
 pip install otonagai-dl
 ```
 
-After installing the package locally, go into your terminal of choice by typing
+After installing the package locally, you can create a folder, open the terminal in that folder and type in
 
 ```
 otonagai-dl
