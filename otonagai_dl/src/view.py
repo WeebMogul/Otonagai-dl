@@ -4,6 +4,11 @@ from readchar import key
 from rich.panel import Panel
 from rich.markdown import Markdown
 from abc import ABC, abstractmethod
+from rich.console import Console
+from .warning_shots import (
+    create_db_warning_panel,
+    create_log_warning_panel,
+)
 
 
 def color_by_status(category):
@@ -19,74 +24,29 @@ def color_by_status(category):
     return color_map.get(category, "white")
 
 
-def no_downloads():
+def table_scroll(size, rows, select, search_table_length):
 
-    return Panel(
-        Markdown(
-            """
+    # check if th the len of the current rows is greater than the console height
+    if len(rows) + 2 > size:
 
-            There seems to be an issue with the urls you have provided.
-            
-            Here are some reasons:
+        # if the select variable contains a no. less than half the size, return a list of rows from 0 to the console height
+        if select < (size / 2):
+            rows = rows[:size]
 
-            - No urls entered.
-            - You entered a text instead of a number with the page-related input.
-            - The starting page number is more than the ending page number.
-            - The product associated with the url is already in the database.
-            - The hobbylinkjapan link you entered is not available on the website.
+        # if reach to the end of the search_table_length, then show from the end to the current console height and reset the select value
+        elif select + (size / 2) > search_table_length:
+            rows = rows[-size:]
+            select -= search_table_length - size
+        else:
+            # if in the middle, show the inbetweens.
+            rows = rows[select - (size // 2) : select + (size // 2)]
+            select = size // 2
 
-            Try again.
-            """
-        ),
-        title_align="center",
-    )
-
-
-def create_db_warning_panel():
-
-    return Panel(
-        Markdown(
-            """
-            There is no merchandise info added to the database. Please follow the instructions :
-            
-            - Go to the HobbyLinkJapan website (https://www.hlj.com)
-            - Get the link to any of your favourite product or the search result containing multiple pages
-            - Choose the "Open URLs" option and paste the links you copied.
-            - Close and save the file.
-            - Choose the option "Add Merchandise to the database". Follow the onscreen instructions.
-            - Now, go the the database.                    
-            """
-        ),
-        title_align="center",
-    )
-
-
-def create_log_warning_panel():
-
-    return Panel(
-        Markdown(
-            """
-            No merch has been added to your log. Please follow the instructions :
-            
-            - Go to the database
-            - Choose any one of the merch in the database
-            - Enter 'y' to add to your log.
-            - Choose the status of what you're going to do with the merch, to the log.
-            - Exit the database.
-            - Now, go the the log and check if it is in.                    
-            """
-        ),
-        title_align="center",
-    )
+    return rows, select
 
 
 # Interface for the table UI
 class Table_View(ABC):
-
-    # function to enable scrolling on the table
-    @abstractmethod
-    def _table_scroll():
-        pass
 
     # return a markdown panel of a warning
     @abstractmethod
@@ -106,58 +66,29 @@ class Search_Table_View(Table_View):
         self.selected = Style(color="blue", bgcolor="white", bold=True)
         self.gunpla_log = gunpla_log
 
-    """
-    Sounds silly, but I'm doing this one because :
-    1. The snippet is really nice.
-    2. Gotta give credit where it's due.
-    3. Don't want to get yanked due to software licensing issues
-    """
-    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
-    # Original author: llimllib
-    # License: MIT License
-    # URL: https://github.com/Textualize/rich/discussions/1785
-
-    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
-    def _table_scroll(self, size, rows, select):
-        if len(rows) + 3 > size:
-            if select < size / 2:
-                rows = rows[:size]
-            elif select + size / 2 > len(self.gunpla_log):
-                rows = rows[-size:]
-                select -= len(self.gunpla_log) - size
-            else:
-                rows = rows[select - size // 2 : select + size // 2]
-                select -= select - size // 2
-
-        return rows, select
-
     def warning_panel(self):
         return create_db_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
         self.table = Table(title="Database Table")
-        self.table.add_column(
-            "Code",
-            justify="center",
-        )
-        self.table.add_column(
-            "Title",
-        )
+        self.table.add_column("Code", justify="center", no_wrap=True)
+        self.table.add_column("Title")
         self.table.add_column(
             "Series",
         )
-        self.table.add_column(
-            "Item Type",
-        )
+        self.table.add_column("Item Type", no_wrap=True)
         self.table.add_column(
             "Manufacturer",
         )
-        self.table.add_column(
-            "Release Date",
-        )
+        self.table.add_column("Release Date", no_wrap=True)
 
-        size = console.height - 6
-        rows, select = self._table_scroll(size, gunpla_log, select)
+        size = console.height - 12
+        rows, select = table_scroll(
+            size=size,
+            rows=gunpla_log,
+            select=select,
+            search_table_length=len(gunpla_log),
+        )
 
         for i, col in enumerate(rows):
             self.table.add_row(*col, style=self.selected if i == select else None)
@@ -173,32 +104,6 @@ class Log_Table_View(Table_View):
         self.table = None
         self.selected = Style(bgcolor="white", bold=True, color="black")
         self.gunpla_log = gunpla_log
-
-    """
-    Sounds silly, but I'm doing this one because :
-    1. The snippet is really nice.
-    2. Gotta give credit where it's due.
-    3. Don't want to get yanked due to software licensing issues, since it's my first time doing this.
-    """
-    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
-    # Original author: llimllib
-    # License: MIT License
-    # URL: https://github.com/Textualize/rich/discussions/1785
-
-    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
-
-    def _table_scroll(self, size, rows, select):
-        if len(rows) + 6 > size:
-            if select < size / 2:
-                rows = rows[:size]
-            elif select + size / 2 > len(self.gunpla_log):
-                rows = rows[-size:]
-                select -= len(self.gunpla_log) - size
-            else:
-                rows = rows[select - size // 2 : select + size // 2]
-                select -= select - size // 2
-
-        return rows, select
 
     def warning_panel(self):
         return create_log_warning_panel()
@@ -224,8 +129,14 @@ class Log_Table_View(Table_View):
             justify="left",
         )
 
-        size = console.height - 6
-        rows, select = self._table_scroll(size, gunpla_log, select)
+        # display the list of items currently on the table
+        size = console.height - 12
+        rows, select = table_scroll(
+            size=size,
+            rows=gunpla_log,
+            select=select,
+            search_table_length=len(gunpla_log),
+        )
 
         for i, col in enumerate(rows):
             color = color_by_status(col[4])

@@ -11,6 +11,11 @@ from .log_system import log_msg
 console = Console()
 
 
+def force_restart(live: Live):
+    os.system("cls" if os.name == "nt" else "clear")
+    live.start(refresh=True)
+
+
 def basic_or_advanced_search(model):
 
     search_flag = None
@@ -42,11 +47,6 @@ class Navigation(ABC):
         pass
 
 
-"""
-Lot of boilerplate code here. Will refactor it in subsequent updates, but for now, it just works.
-"""
-
-
 class search_table_navigation(Navigation):
 
     def __init__(self, model, view, console):
@@ -62,12 +62,6 @@ class search_table_navigation(Navigation):
             time.sleep(5)
             return None
 
-    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
-    # Original author: llimllib
-    # License: MIT License
-    # URL: https://github.com/Textualize/rich/discussions/1785
-
-    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
     def navigate_table(self):
         selected = 0
         # choice for advanced or full db table
@@ -97,40 +91,39 @@ class search_table_navigation(Navigation):
                     self.console, search_result, selected, typed_key
                 )
 
-                if typed_key == key.UP:
-                    selected = max(0, selected - 1)
-                elif typed_key == key.DOWN:
-                    selected = min(len(search_result) - 1, selected + 1)
-                if typed_key == key.ENTER:
-                    live.stop()
+                match typed_key:
+                    case key.UP:
+                        selected = max(0, selected - 1)
+                    case key.DOWN:
+                        selected = min(len(search_result) - 1, selected + 1)
+                    case key.ENTER:
+                        live.stop()
 
-                    if inquirer.confirm(
-                        f"Do you want to add {selected_gunpla[1]} to the log ?"
-                    ).execute():
-                        # live.stop()
-                        self.model.insert_to_table(
-                            selected_gunpla[0],
-                            selected_gunpla[1],
-                            selected_gunpla[2],
-                        )
+                        if inquirer.confirm(
+                            f"Do you want to add {selected_gunpla[1]} to the log ?"
+                        ).execute():
+                            # live.stop()
+                            self.model.insert_to_table(
+                                selected_gunpla[0],
+                                selected_gunpla[1],
+                                selected_gunpla[2],
+                            )
 
-                    # stop and then restart the function
-                    if flag == "Basic":
-                        os.system("cls" if os.name == "nt" else "clear")
-                        live.start(refresh="True")
-                    elif flag == "Advanced":
-                        break
+                        # stop and then restart the function
+                        if flag == "Basic":
+                            force_restart(live)
+                        elif flag == "Advanced":
+                            break
 
-                elif typed_key == key.CTRL_D:
-                    live.stop()
-                    if inquirer.confirm(
-                        "Do you want to go back to the main menu ?"
-                    ).execute():
-                        break
+                    case key.CTRL_D:
 
-                    os.system("cls" if os.name == "nt" else "clear")
-                    live.start(refresh=True)
+                        live.stop()
+                        if inquirer.confirm(
+                            "Do you want to go back to the main menu ?"
+                        ).execute():
+                            break
 
+                        force_restart(live)
                 live.update(
                     self.view.create_table(
                         self.console,
@@ -154,19 +147,6 @@ class log_table_navigation:
             self.console.print(self.view.warning_panel())
             time.sleep(5)
             return None
-
-    """
-    Sounds silly, but I'm doing this one because :
-    1. The snippet is really nice.
-    2. Gotta give credit where it's due.
-    3. Don't want to get yanked due to software licensing issues, since it's my first time doing this.
-    """
-    # This code snippet is adapted from a discussion post in the [Project Name] GitHub repository
-    # Original author: llimllib
-    # License: MIT License
-    # URL: https://github.com/Textualize/rich/discussions/1785
-
-    # The full text of the MIT License can be found in the LICENSE file at the root of this project.
 
     def navigate_table(self):
         selected = 0
@@ -193,42 +173,33 @@ class log_table_navigation:
                     self.console, log_result, selected, typed_key
                 )
 
-                if typed_key == key.UP:
-                    selected = max(0, selected - 1)
-                elif typed_key == key.DOWN:
-                    selected = min(len(log_result) - 1, selected + 1)
+                match typed_key:
+                    case key.UP:
+                        selected = max(0, selected - 1)
+                    case key.DOWN:
+                        selected = min(len(log_result) - 1, selected + 1)
+                    case key.ENTER:
+                        live.stop()
+                        self.model.update_table(selected_log[0], selected_log[2])
+                        force_restart(live)
+                    case key.DELETE:
+                        live.stop()
+                        self.model.delete_from_table(selected_log[0], selected_log[2])
 
-                # Update the status of the product build
-                elif typed_key == key.ENTER:
-                    live.stop()
-                    self.model.update_table(selected_log[0], selected_log[2])
-
-                    os.system("cls" if os.name == "nt" else "clear")
-                    live.start(refresh=True)
-
-                # delete the product from the log
-                elif typed_key == key.DELETE:
-                    live.stop()
-                    self.model.delete_from_table(selected_log[0], selected_log[2])
-
-                    # update the table with the new changes
-                    log_result = self.model.view_table()
-                    selected_log = self.view.create_table(
-                        self.console, log_result, selected, typed_key
-                    )
-                    selected = 0
-
-                    os.system("cls" if os.name == "nt" else "clear")
-                    live.start(refresh=True)
-
-                elif typed_key == key.CTRL_D:
-                    live.stop()
-                    if inquirer.confirm(
-                        "Do you want to go back to the main menu ?"
-                    ).execute():
-                        break
-                    os.system("cls" if os.name == "nt" else "clear")
-                    live.start(refresh=True)
+                        # update the table with the new changes
+                        log_result = self.model.view_table()
+                        selected_log = self.view.create_table(
+                            self.console, log_result, selected, typed_key
+                        )
+                        selected = 0
+                        force_restart(live)
+                    case key.CTRL_D:
+                        live.stop()
+                        if inquirer.confirm(
+                            "Do you want to go back to the main menu ?"
+                        ).execute():
+                            break
+                        force_restart(live)
 
                 live.update(
                     self.view.create_table(

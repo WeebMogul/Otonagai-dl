@@ -2,7 +2,7 @@ import os
 from rich.console import Console
 import asyncio
 import time
-from .view import no_downloads
+from .warning_shots import no_downloads
 from .hobby_link_jp_scraper.hlj_batch import extract_batch
 from .hobby_link_jp_scraper.hlj_dl import HLJ_product_scraper
 import asyncio

@@ -3,7 +3,8 @@ from .controller import search_table_navigation, log_table_navigation
 import sys
 from .hobby_link_jp_scraper.hlj_ui import HLJ_scraper_ui
 from .model import gunpla_log_db, gunpla_search_db, web_to_db_bridge
-from .view import Search_Table_View, Log_Table_View, no_downloads
+from .view import Search_Table_View, Log_Table_View
+from .warning_shots import no_downloads
 from .utils import (
     use_edit_file,
     extract_from_page_links,
