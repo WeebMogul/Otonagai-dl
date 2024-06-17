@@ -6,6 +6,10 @@ Otonagai-dl is a CLI-based app that keeps track of your favourite merchandise fr
 
 Originally, this was being made to keep track of build progress of gunpla (Gundam Model Kits), but I thought it would be better to expand it to action figures and other merch available.
 
+![1718638317414](https://file+.vscode-resource.vscode-cdn.net/d%3A/GitHub/Python-Programming-Projects/Gunpla_Tracker_Database/gunpla_tracker/image/README/1718638317414.png)
+
+![1718638417092](image/README/1718638417092.png)
+
 # Disclamer
 
 This project is only meant for personal use and is only meant for the purpose of creating a log to keep track of merchandise.
