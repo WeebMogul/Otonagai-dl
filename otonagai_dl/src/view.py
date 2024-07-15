@@ -115,7 +115,7 @@ class Log_Table_View(Table_View):
         return create_log_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
-        self.table = Table(title="Log Table")
+        self.table = Table(title="Log Table", expand=True)
 
         # self.table.add_column("Log ID", justify="left", style="cyan")
         self.table.add_column(
