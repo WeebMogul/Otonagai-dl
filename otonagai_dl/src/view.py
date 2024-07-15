@@ -50,12 +50,12 @@ class Table_View(ABC):
 
     # return a markdown panel of a warning
     @abstractmethod
-    def warning_panel():
+    def warning_panel(self,**kwargs):
         pass
 
     # create the table UI
     @abstractmethod
-    def create_table():
+    def create_table(self,**kwargs):
         pass
 
 
@@ -70,19 +70,24 @@ class Search_Table_View(Table_View):
         return create_db_warning_panel()
 
     def create_table(self, console, gunpla_log, select, entered=False):
-        self.table = Table(title="Database Table")
+        # self.table = Table(title="Database Table",min_width=300)
+
+        # set table rows and columns
+        self.table = Table(title="Database Table",expand=True)
         self.table.add_column("Code", justify="center", no_wrap=True)
-        self.table.add_column("Title")
+        self.table.add_column("Title", no_wrap=False, max_width=60)
         self.table.add_column(
-            "Series",
+            "Series",no_wrap=False,
         )
-        self.table.add_column("Item Type", no_wrap=True)
+        self.table.add_column("Item Type", no_wrap=False, max_width=40)
         self.table.add_column(
-            "Manufacturer",
+            "Manufacturer",no_wrap=False
         )
-        self.table.add_column("Release Date", no_wrap=True)
+        self.table.add_column("Release Date", no_wrap=False)
 
         size = console.height - 12
+
+        # get rows based on the movement of navigation keys
         rows, select = table_scroll(
             size=size,
             rows=gunpla_log,
@@ -90,6 +95,7 @@ class Search_Table_View(Table_View):
             search_table_length=len(gunpla_log),
         )
 
+        # highlight row. If "Enter Key" is pressed, return the values for figure name, item_type, code
         for i, col in enumerate(rows):
             self.table.add_row(*col, style=self.selected if i == select else None)
             if i == select and entered == key.ENTER:
