@@ -236,7 +236,13 @@ class gunpla_log_db:
             ],
         ).execute()
 
+        # current_status = self.cursor.execute(f"Select status from {log_table_name} where log_id = ?",log_id)
+
         with self.connection:
+            self.cursor.execute(f"Select status from {log_table_name} where log_id = ?",
+                                                 (log_id,),)
+            current_status = self.cursor.fetchone()[0]
+
             self.cursor.execute(
                 f"UPDATE {log_table_name} set status = ? where log_id = ?",
                 (
@@ -244,7 +250,7 @@ class gunpla_log_db:
                     log_id,
                 ),
             )
-        log_msg(f"Changing status for {name} to new status {log_state}")
+        log_msg(f"Changing status for {name} from \"{current_status}\" to \"{log_state}\"")
         return True
 
     def delete_from_table(self, log_id, name):

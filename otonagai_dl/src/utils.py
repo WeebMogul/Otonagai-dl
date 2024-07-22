@@ -34,7 +34,37 @@ def extract_urls_from_file():
     with open(URL_FILE_PATH, "rb") as f:
         text_file_urls.extend(line.decode().strip() for line in f.readlines())
 
-    return text_file_urls
+    return set(text_file_urls)
+
+
+def get_product_info_from_urls(text_based_urls):
+
+    page_urls, non_page_urls = _filter_urls(text_based_urls)
+    for url in page_urls:
+
+        try:
+            print(
+                f"\n Please add the pages to extract the products from {url}\n"
+            )
+            start_page = int(input("Please enter the starting page : "))
+            end_page = int(input("Please enter the ending page : "))
+
+            # Extract the product urls from each page
+            start_page, end_page = add_page_nos(start_page, end_page)
+            log_msg(
+                f"{url} starting with page {start_page} and ending with {end_page}"
+            )
+            end_page += 1
+            if start_page is not None and end_page is not None:
+                non_page_urls.extend(
+                    extract_from_page_links(
+                        url, start_page=start_page, end_page=end_page
+                    )
+                )
+        except Exception:
+            Console().print(no_downloads())
+
+    return non_page_urls
 
 
 # check if the start page number is bigger than the end page
@@ -76,7 +106,7 @@ def use_edit_file(inquirer):
 
 
 # only retrieve the urls that are from HobbylinkJapan
-def filter_urls(urls):
+def _filter_urls(urls):
 
     # remove any links not related to hobby link japan
     hobbylink_urls = list(filter(lambda x: "hlj.com" in x, urls))

@@ -1,5 +1,4 @@
 from rich.console import Console
-from InquirerPy import inquirer
 from abc import ABC, abstractmethod
 from readchar import readkey, key
 from InquirerPy import inquirer
@@ -19,6 +18,8 @@ def force_restart(live: Live):
 def basic_or_advanced_search(model):
 
     search_flag = None
+    search_result = []
+
     if len(model.view_table()) >= 1:
         search_flag = inquirer.select(
             "Do you want to proceed with advanced search or regular search",
@@ -29,8 +30,6 @@ def basic_or_advanced_search(model):
             search_result = model.advanced_view_table()
         elif search_flag == "Basic":
             search_result = model.view_table()
-    else:
-        search_result = []
 
     return search_result, search_flag
 
@@ -84,7 +83,6 @@ class search_table_navigation(Navigation):
 
                 # read keyboard input
                 typed_key = readkey()
-                # log_msg(f"Key typed : {ch}")
 
                 # selected entry on the table
                 selected_gunpla = self.view.create_table(
@@ -102,7 +100,7 @@ class search_table_navigation(Navigation):
                         if inquirer.confirm(
                             f"Do you want to add {selected_gunpla[1]} to the log ?"
                         ).execute():
-                            # live.stop()
+
                             self.model.insert_to_table(
                                 selected_gunpla[0],
                                 selected_gunpla[1],
@@ -168,10 +166,10 @@ class log_table_navigation:
             while len(log_result) >= 1:
 
                 typed_key = readkey()
-
                 selected_log = self.view.create_table(
                     self.console, log_result, selected, typed_key
                 )
+                log_msg(selected_log)
 
                 match typed_key:
                     case key.UP:
@@ -181,6 +179,7 @@ class log_table_navigation:
                     case key.ENTER:
                         live.stop()
                         self.model.update_table(selected_log[0], selected_log[2])
+                        log_result = self.model.view_table()
                         force_restart(live)
                     case key.DELETE:
                         live.stop()
@@ -191,7 +190,10 @@ class log_table_navigation:
                         selected_log = self.view.create_table(
                             self.console, log_result, selected, typed_key
                         )
-                        selected = 0
+
+
+
+                        # selected = 0
                         force_restart(live)
                     case key.CTRL_D:
                         live.stop()
@@ -204,7 +206,7 @@ class log_table_navigation:
                 live.update(
                     self.view.create_table(
                         self.console,
-                        self.model.view_table(),
+                        log_result,
                         selected,
                     ),
                     refresh=True,
